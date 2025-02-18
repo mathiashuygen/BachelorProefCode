@@ -34,4 +34,10 @@ RUN nvcc -o busy_kernel main.cu -I/home/dockeruser/app/libsmctrl -L/home/dockeru
 RUN mkdir -p reports
 
 # Run the application with Nsight Compute
-CMD ["ncu", "--set", "full", "--target-processes", "all", "--launch-skip", "0", "--launch-count", "1", "-o", "/home/dockeruser/app/reports/reportBusy", "./busy_kernel"]
+
+CMD ncu --set full \
+    --target-processes all \
+    --launch-skip 0 \
+    --launch-count 1 \
+    -o /home/dockeruser/app/reports/"${REPORT_NAME:-busy_kernel_report}" \
+    ./busy_kernel

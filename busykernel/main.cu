@@ -28,7 +28,7 @@ int main()
     cudaStreamCreate(&busyStream);
 
       //set a mask for the stream, alternating mask which means 50% of the tpcs are used.
-    libsmctrl_set_stream_mask((void*)busyStream, 0x0FFFFFFFFFFFFFFF);
+    libsmctrl_set_stream_mask((void*)busyStream, 0x1);
     // Choose grid and block sizes to maximize SM utilization
     const int threadsPerBlock = 256;
     const int blocksPerSM = 32; // RTX 4070 Ti can handle multiple blocks per SM
