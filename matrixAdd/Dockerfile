@@ -1,7 +1,6 @@
 # Use an official CUDA image as a base
 FROM nvidia/cuda:11.8.0-devel-ubuntu20.04
 
-# Install necessary packages
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     git \
@@ -28,6 +27,7 @@ RUN chown -R dockeruser:dockeruser /home/dockeruser/app
 # Switch to the non-root user
 USER dockeruser
 
+
 # Compile the CUDA code and link the library
 RUN nvcc -o matrix_add main.cu -I/home/dockeruser/app/libsmctrl -L/home/dockeruser/app/libsmctrl -l:libsmctrl.a -lcuda -ldl
 
@@ -35,4 +35,10 @@ RUN nvcc -o matrix_add main.cu -I/home/dockeruser/app/libsmctrl -L/home/dockerus
 RUN mkdir -p reports
 
 # Run the application with Nsight Compute
-CMD ["ncu", "--set", "full", "--target-processes", "all", "--launch-skip", "0", "--launch-count", "1", "-o", "/home/dockeruser/app/reports/report10", "./matrix_add"]
+CMD ncu --set full \
+    --target-processes all \
+    --launch-skip 0 \
+    --launch-count 1 \
+    -o /home/dockeruser/app/reports/"${REPORT_NAME:-report10}" \
+    ./matrix_add
+
