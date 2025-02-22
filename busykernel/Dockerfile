@@ -34,7 +34,6 @@ RUN nvcc -o busy_kernel main.cu -I/home/dockeruser/app/libsmctrl -L/home/dockeru
 RUN mkdir -p reports
 
 # Run the application with Nsight Compute
-
 CMD ncu --set full \
     --target-processes all \
     --launch-skip 0 \

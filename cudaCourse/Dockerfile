@@ -34,4 +34,9 @@ RUN nvcc -o sin sinSum.cu -I/home/dockeruser/app/libsmctrl -L/home/dockeruser/ap
 RUN mkdir -p reports
 
 # Run the application with Nsight Compute
-CMD ["ncu", "--set", "full", "--target-processes", "all", "--launch-skip", "0", "--launch-count", "1", "-o", "/home/dockeruser/app/reports/reportSin", "./sin"]
+CMD ncu --set full \
+    --target-processes all \
+    --launch-skip 0 \
+    --launch-count 1 \
+    -o /home/dockeruser/app/reports/"${REPORT_NAME:-sin_report}" \
+    ./sin
