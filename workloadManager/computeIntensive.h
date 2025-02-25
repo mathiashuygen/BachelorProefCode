@@ -1,11 +1,11 @@
-#include <stdlib.h>
+#include <iostream>
 #include "cuda_runtime.h"
 
 
 
 
 // Kernel that performs a simple that is compute intensive.
-__global__ void maxUtilizationKernel(thrust::device_vector<float> output, int n, int iterations)
+__global__ void maxUtilizationKernel(float* output, long n, int iterations)
 {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
     if (tid < n) {

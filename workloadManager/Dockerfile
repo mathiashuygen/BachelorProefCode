@@ -16,7 +16,7 @@ WORKDIR /home/dockeruser/app
 # Copy the CUDA source code and the library files
 COPY main.cu .
 COPY computeIntensive.h .
-
+COPY memoryIntensive.h .
 # Change ownership of the files to the non-root user
 RUN chown -R dockeruser:dockeruser /home/dockeruser/app
 
