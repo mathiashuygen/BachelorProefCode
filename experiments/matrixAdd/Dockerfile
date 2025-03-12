@@ -37,8 +37,6 @@ RUN mkdir -p reports
 # Run the application with Nsight Compute
 CMD ncu --set full \
     --target-processes all \
-    --launch-skip 0 \
-    --launch-count 1 \
     -o /home/dockeruser/app/reports/"${REPORT_NAME:-report10}" \
     ./matrix_add
 

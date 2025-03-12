@@ -3,7 +3,7 @@
 #include "libsmctrl.h"
 
 // Kernel that performs a simple computation
-__global__ void maxUtilizationKernel(thrust::device_vector<float> output, int n)
+__global__ void maxUtilizationKernel(float* output, int n)
 {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
     if (tid < n) {

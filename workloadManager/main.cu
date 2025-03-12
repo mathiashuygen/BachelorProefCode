@@ -109,6 +109,7 @@ int main(int argc, char *argv[])
     cudaGetDeviceProperties(&deviceProp, 0);
     int threadsPerBlock, blocksPerSM, totalBlock;
     
+    
 
     while(true){
       
@@ -134,7 +135,7 @@ int main(int argc, char *argv[])
         return 0;
       }
       else{
-        std::cout<<"not a valid option chose, choose between 1-2-3\n";
+        std::cout<<"not a valid option chose, choose between 1, 2 or 3\n";
       }
 
     }    

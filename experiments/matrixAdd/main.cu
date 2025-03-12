@@ -1,6 +1,9 @@
-#include <stdio.h>
+#include <iostream>
 #include <cuda_runtime.h>
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 #include "libsmctrl.h"
+
 #define CHECK_CUDA_ERROR(call) \
     do { \
         cudaError_t err = call; \
@@ -21,53 +24,62 @@ __global__ void firstKernel(float *A, float *B, float *C, int N) {
 
 int main() {
     int N = 800;
-    int numberOfStreams = 2;
     cudaDeviceProp deviceProp;
     cudaGetDeviceProperties(&deviceProp, 0);
   
-    cudaStream_t streams[numberOfStreams];
-    cudaStreamCreate(&streams[0]);
-    cudaStreamCreate(&streams[1]);
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
     
-    const uint64_t masks[2] = {0x1, 0x3};
+    libsmctrl_set_stream_mask((void*)stream, 0xFFFFFFFFFFFFC00);
 
-    //libsmctrl_set_stream_mask((void*)streams[0], masks[0]);
     
-    float A[N][N], B[N][N], C[N][N];
-    float D[N][N], E[N][N], F[N][N];
+    thrust::host_vector<float> A(N*N);
+    thrust::host_vector<float> B(N*N);
+    thrust::host_vector<float> C(N*N);
+    
+    thrust::host_vector<float> D(N*N);
+    thrust::host_vector<float> E(N*N);
+    thrust::host_vector<float> F(N*N);
     
 
     // Initialize matrices A, B, D and E
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            A[i][j] = (float)i;
-            B[i][j] = (float)i + 1.0;
-            D[i][j] = (float)i;
-            E[i][j] = (float)i + 1.0;
-        }
+    for (int i = 0; i < N*N; i++) {
+      A[i] = (float)i;
+      B[i] = (float)i + 1.0;
+      D[i] = (float)i;
+      E[i] = (float)i + 1.0;
     }
 
-    float *d_A, *d_B, *d_C;
-    float *d_D, *d_E, *d_F;
-    
 
     size_t size = N * N * sizeof(float);
 
     // Allocate device memory
-    CHECK_CUDA_ERROR(cudaMalloc(&d_A, size));
-    CHECK_CUDA_ERROR(cudaMalloc(&d_B, size));
-    CHECK_CUDA_ERROR(cudaMalloc(&d_C, size));
+    thrust::device_vector<float>d_A(size);
+    thrust::device_vector<float>d_B(size);
+    thrust::device_vector<float>d_C(size);
+    d_A = A; 
+    d_B = B;
+   
+  
 
-    CHECK_CUDA_ERROR(cudaMalloc(&d_D, size));
-    CHECK_CUDA_ERROR(cudaMalloc(&d_E, size));
-    CHECK_CUDA_ERROR(cudaMalloc(&d_F, size));
+    thrust::device_vector<float>d_D(size);
+    thrust::device_vector<float>d_E(size);
+    thrust::device_vector<float>d_F(size);
+    d_D = D;
+    d_E = E;
+    
 
-    // Copy data from host to device
-    CHECK_CUDA_ERROR(cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice));
-    CHECK_CUDA_ERROR(cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice));
+    float *d_aptr = thrust::raw_pointer_cast(&d_A[0]);
+    float *d_cptr = thrust::raw_pointer_cast(&d_B[0]);
+    float *d_bptr = thrust::raw_pointer_cast(&d_C[0]);
 
-    CHECK_CUDA_ERROR(cudaMemcpy(d_D, D, size, cudaMemcpyHostToDevice));
-    CHECK_CUDA_ERROR(cudaMemcpy(d_E, E, size, cudaMemcpyHostToDevice));
+    float *d_dptr = thrust::raw_pointer_cast(&d_D[0]);
+    float *d_eptr = thrust::raw_pointer_cast(&d_E[0]);
+    float *d_fptr = thrust::raw_pointer_cast(&d_F[0]);
+
+
+
+
 
     // Define block and grid dimensions
     dim3 threadsPerBlock(16, 16);  // 256 threads total, arranged in 16x16
@@ -75,48 +87,35 @@ int main() {
                    (N + threadsPerBlock.y - 1) / threadsPerBlock.y);
     
     // Launch the kernel
-    firstKernel<<<numBlocks, threadsPerBlock, 0, streams[0]>>>(d_A, d_B, d_C, N);
+    firstKernel<<<numBlocks, threadsPerBlock, 0, stream>>>(d_aptr, d_bptr, d_cptr, N);
 
     
     //wait for gpu to finish executing
     cudaDeviceSynchronize();
+    
 
+    //copy result from device memory to host memory.
+    C = d_C; 
 
-    // Copy the result back to the host
-    CHECK_CUDA_ERROR(cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost));
-
-    CHECK_CUDA_ERROR(cudaMemcpy(F, d_F, size, cudaMemcpyDeviceToHost));
 
     // Verify the result
     bool success = true;
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            float expected = A[i][j] + B[i][j];
-            float expected2 = D[i][j] + E[i][j];
-            if (C[i][j] != expected) {
-                printf("Error at C[%d][%d]: expected %.2f, got %.2f\n", i, j, expected, C[i][j]);
+    for (int i = 0; i < N*N; i++) {
+            float expected = A[i] + B[i];
+            float expected2 = D[i] + E[i];
+            if (C[i] != expected) {
+                printf("Error at C[%d]: expected %.2f, got %.2f\n", i, expected, C[i]);
                 success = false;
                 break;
             } 
-        }
+        
         if (!success) break;
     }
     if (success) {
         printf("Matrix addition successful!\n");
     }
 
-    // Free device memory
-    CHECK_CUDA_ERROR(cudaFree(d_A));
-    CHECK_CUDA_ERROR(cudaFree(d_B));
-    CHECK_CUDA_ERROR(cudaFree(d_C));
-
-    CHECK_CUDA_ERROR(cudaFree(d_D));
-    CHECK_CUDA_ERROR(cudaFree(d_E));
-    CHECK_CUDA_ERROR(cudaFree(d_F));
-    
-
-    cudaStreamDestroy(streams[0]);
-    cudaStreamDestroy(streams[1]);
+    cudaStreamDestroy(stream);
 
 
 

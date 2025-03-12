@@ -30,12 +30,14 @@ int main(int argc,char *argv[])
 	long terms = (argc > 2) ? atoi(argv[2]) : 10000000;     // line arguments
 	int threads = 256;
 	int blocks = (steps+threads-1)/threads;  // ensure threads*blocks ≥ steps
+  
+  
 
   cudaStream_t sinusStream;
   cudaStreamCreate(&sinusStream);
   libsmctrl_set_stream_mask((void*)sinusStream, 0x1);
 
-	double step_size = 0.1; // NB n-1 steps between n points
+	double step_size = 0.1; 
 
 	thrust::device_vector<float> dsums(steps);         // GPU buffer 
 	float *dptr = thrust::raw_pointer_cast(&dsums[0]); // get pointer
