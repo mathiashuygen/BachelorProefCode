@@ -80,11 +80,22 @@ benchmarks: bin/mandelbrot.so bin/timer_spin.so bin/multikernel.so \
 	bin/cpu_inorder_walk.so bin/cpu_random_walk.so bin/inorder_walk.so \
 	bin/random_walk.so bin/sharedmem_timer_spin.so bin/counter_spin.so \
 	bin/timer_spin_default_stream.so bin/stream_action.so bin/task_host.so \
-	bin/matrix_multiply.so bin/busy_kernel.so
+	bin/matrix_multiply.so bin/busy_kernel.so bin/changing_mask.so
 
 directories:
 	mkdir -p bin/
 	mkdir -p obj/
+
+
+
+
+
+bin/changing_mask.so: src/bachSrcFiles/changing_mask.cu  $(BENCHMARK_DEPENDENCIES)
+	$(NVCC) $(LDFLAGS) --shared $(NVCCFLAGS) -o bin/changing_mask.so \
+	src/bachSrcFiles/changing_mask.cu obj/benchmark_gpu_utilities.o obj/cjson.o $(LDLIBS)
+
+
+
 
 
 bin/busy_kernel.so: src/bachSrcFiles/busyKernel.cu  $(BENCHMARK_DEPENDENCIES)

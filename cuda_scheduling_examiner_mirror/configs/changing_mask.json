@@ -1,0 +1,24 @@
+{
+  "name": "busy kernel test",
+  "comment": "This config is just for testing the busy-kernel benchmark",
+  "max_iterations": 1,
+  "max_time": 0,
+  "cuda_device": 0,
+  "benchmarks": [
+    {
+      "filename": "./bin/changing_mask.so",
+      "log_name": "maskChange.json",
+      "label": "mask change 1024x10",
+      "thread_count": 1024,
+      "block_count": 10,
+      "data_size": 0,
+      "release_time": 0,
+      "additional_info": [
+        {
+          "sm_mask1": "0xFFFFFFFFFFFFFFE0",
+          "sm_mask2": "0xFFFFFFFFFFFFFC1F"
+        }
+      ]
+    }
+  ]
+}
