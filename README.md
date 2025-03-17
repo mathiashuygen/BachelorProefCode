@@ -6,7 +6,7 @@ Running these experiments can be done by executing the shell file in these direc
 ./execute.sh
 ```
 The "workloadManager" directory contains code that lets the user choose which of two types of tasks
-they want to launch on the GPU. These two types are:\
+they want to launch on the GPU. These two types are:
 
 - Compute intensive tasks.
 - Memory bound tasks. 
