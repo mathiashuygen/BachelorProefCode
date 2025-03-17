@@ -1,0 +1,68 @@
+{
+  "name": "busy kernel test",
+  "comment": "This config is just for testing the busy-kernel benchmark",
+  "max_iterations": 1,
+  "max_time": 0,
+  "cuda_device": 0,
+  "benchmarks": [
+    {
+      "filename": "./bin/busy_kernel.so",
+      "log_name": "first.json",
+      "label": "busy kernel 1024x10",
+      "thread_count": 1024,
+      "block_count": 10,
+      "data_size": 0,
+      "release_time": 0,
+      "additional_info": [
+        {
+          "sm_mask": "0xFFFFFFFFFFFFFFE0"
+        }
+      ]
+    },
+    {
+      "filename": "./bin/busy_kernel.so",
+      "log_name": "second.json",
+      "label": "busy kernel 1024x10",
+      "thread_count": 1024,
+      "block_count": 10,
+      "release_time": 0,
+      "data_size": 0,
+      "additional_info": [
+        {
+          "sm_mask": "0xFFFFFFFFFFFFFC1F"
+
+        }
+      ]
+    },
+    {
+      "filename": "./bin/busy_kernel.so",
+      "log_name": "third.json",
+      "label": "busy kernel 1024x10",
+      "thread_count": 1024,
+      "block_count": 10,
+      "release_time": 0,
+      "data_size": 0,
+      "additional_info": [
+        {
+          "sm_mask": "0xFFFFFFFFFFFF83FF"
+
+        }
+      ]
+    },
+   {
+      "filename": "./bin/busy_kernel.so",
+      "log_name": "fourth.json",
+      "label": "busy kernel 1024x10",
+      "thread_count": 1024,
+      "block_count": 10,
+      "release_time": 0,
+      "data_size": 0,
+      "additional_info": [
+        {
+          "sm_mask": "0xFFFFFFFFFFF07FFF"
+
+        }
+      ]
+    }
+  ]
+}

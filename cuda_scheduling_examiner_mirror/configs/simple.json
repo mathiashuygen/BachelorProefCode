@@ -1,0 +1,15 @@
+{
+  "name": "Single-job test",
+  "max_iterations": 10,
+  "max_time": 0,
+  "cuda_device": 0,
+  "benchmarks": [
+    {
+      "filename": "./bin/busy_kernel.so",
+      "label": "testje"
+      "thread_count": 256,
+      "block_count": 256,
+      "data_size": 1000000
+    }
+  ]
+}

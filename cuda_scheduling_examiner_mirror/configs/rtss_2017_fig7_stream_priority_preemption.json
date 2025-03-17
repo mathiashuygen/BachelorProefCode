@@ -1,0 +1,51 @@
+{
+  "name": "Stream priority preemption test",
+  "max_iterations": 1,
+  "max_time": 0,
+  "cuda_device": 0,
+  "pin_cpus": true,
+  "benchmarks": [
+    {
+      "filename": "./bin/timer_spin.so",
+      "log_name": "stream_priority_preemption_1.json",
+      "label": "K1 (low priority)",
+      "thread_count": 1024,
+      "block_count": 8,
+      "data_size": 0,
+      "stream_priority": 0,
+      "additional_info": 500000000
+    },
+    {
+      "filename": "./bin/timer_spin.so",
+      "log_name": "stream_priority_preemption_2.json",
+      "label": "K2 (unspecified priority)",
+      "thread_count": 1024,
+      "block_count": 8,
+      "data_size": 0,
+      "additional_info": 500000000,
+      "release_time": 0.2
+    },
+    {
+      "filename": "./bin/timer_spin.so",
+      "log_name": "stream_priority_preemption_3.json",
+      "label": "K3 (high priority)",
+      "thread_count": 1024,
+      "block_count": 8,
+      "data_size": 0,
+      "stream_priority": -1,
+      "additional_info": 500000000,
+      "release_time": 0.3
+    },
+    {
+      "filename": "./bin/timer_spin.so",
+      "log_name": "stream_priority_preemption_4.json",
+      "label": "K4 (low priority)",
+      "thread_count": 1024,
+      "block_count": 8,
+      "data_size": 0,
+      "stream_priority": 0,
+      "additional_info": 500000000,
+      "release_time": 1.2
+    }
+  ]
+}

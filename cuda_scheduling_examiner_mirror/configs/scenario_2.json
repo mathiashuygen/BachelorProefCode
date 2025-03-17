@@ -1,0 +1,38 @@
+{
+  "name": "Cutting ahead test",
+  "max_iterations": 1,
+  "max_time": 0,
+  "cuda_device": 0,
+  "pin_cpus": true,
+  "benchmarks": [
+    {
+      "filename": "./bin/timer_spin.so",
+      "log_name": "cutahead_1.json",
+      "label": "Released first",
+      "thread_count": 512,
+      "block_count": 7,
+      "data_size": 0,
+      "additional_info": 1000000000
+    },
+    {
+      "filename": "./bin/timer_spin.so",
+      "log_name": "cutahead_2.json",
+      "label": "Released second",
+      "thread_count": 1024,
+      "block_count": 2,
+      "data_size": 0,
+      "additional_info": 500000000,
+      "release_time": 0.25
+    },
+    {
+      "filename": "./bin/timer_spin.so",
+      "log_name": "cutahead_3.json",
+      "label": "Released 3rd, could cut ahead",
+      "thread_count": 256,
+      "block_count": 1,
+      "data_size": 0,
+      "additional_info": 500000000,
+      "release_time": 0.5
+    }
+  ]
+}

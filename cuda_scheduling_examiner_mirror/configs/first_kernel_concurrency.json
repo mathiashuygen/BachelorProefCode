@@ -1,0 +1,63 @@
+{
+  "name": "Concurrency during 1st kernel test",
+  "max_iterations": 1,
+  "max_time": 0,
+  "cuda_device": 0,
+  "pin_cpus": true,
+  "benchmarks": [
+    {
+      "filename": "./bin/timer_spin.so",
+      "log_name": "concurrent_1st_1.json",
+      "label": "Kernel 1",
+      "thread_count": 512,
+      "block_count": 9,
+      "data_size": 0,
+      "additional_info": 250000000
+    },
+    {
+      "filename": "./bin/timer_spin.so",
+      "log_name": "concurrent_1st_2.json",
+      "label": "Kernel 2",
+      "thread_count": 512,
+      "block_count": 1,
+      "data_size": 0,
+      "additional_info": 750000000,
+      "release_time": 0.37
+    },
+    {
+      "filename": "./bin/multikernel.so",
+      "log_name": "concurrent_1st_3.json",
+      "label": "Multiple kernels",
+      "thread_count": 0,
+      "block_count": 0,
+      "data_size": 0,
+      "release_time": 0.6,
+      "additional_info": [
+        {
+          "kernel_label": "K3-1",
+          "duration": 250000000,
+          "block_count": 1,
+          "thread_count": 1024
+        },
+        {
+          "kernel_label": "K3-2",
+          "duration": 250000000,
+          "block_count": 1,
+          "thread_count": 512
+        },
+        {
+          "kernel_label": "K3-3",
+          "duration": 250000000,
+          "block_count": 1,
+          "thread_count": 256
+        },
+        {
+          "kernel_label": "K3-4",
+          "duration": 250000000,
+          "block_count": 1,
+          "thread_count": 128
+        }
+      ]
+    }
+  ]
+}
