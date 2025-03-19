@@ -23,10 +23,10 @@ void sleep(int miliSeconds){
 
 int main(){
   
-  Task<int, int> task(10, 5, 20, 100, printJobExec, 1);
+  Task<int, int> task(10, 5, 20, 100, printJobExec, 1, std::chrono::system_clock::now(), std::chrono::system_clock::now());
   
   while(true){
-      
+    
     task.execute(1, 1);
 
     sleep(1000);
