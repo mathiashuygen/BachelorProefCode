@@ -15,7 +15,7 @@
       "release_time": 0,
       "additional_info": [
         {
-          "sm_mask": "0xFFFFFFFFFFFFFFE0"
+          "sm_mask": "0x0"
         }
       ]
     },
@@ -24,42 +24,12 @@
       "log_name": "second.json",
       "label": "busy kernel 1024x10",
       "thread_count": 1024,
-      "block_count": 10,
+      "block_count": 70,
       "release_time": 0,
       "data_size": 0,
       "additional_info": [
         {
-          "sm_mask": "0xFFFFFFFFFFFFFC1F"
-
-        }
-      ]
-    },
-    {
-      "filename": "./bin/busy_kernel.so",
-      "log_name": "third.json",
-      "label": "busy kernel 1024x10",
-      "thread_count": 1024,
-      "block_count": 10,
-      "release_time": 0,
-      "data_size": 0,
-      "additional_info": [
-        {
-          "sm_mask": "0xFFFFFFFFFFFF83FF"
-
-        }
-      ]
-    },
-   {
-      "filename": "./bin/busy_kernel.so",
-      "log_name": "fourth.json",
-      "label": "busy kernel 1024x10",
-      "thread_count": 1024,
-      "block_count": 10,
-      "release_time": 0,
-      "data_size": 0,
-      "additional_info": [
-        {
-          "sm_mask": "0xFFFFFFFFFFF07FFF"
+          "sm_mask": "0x0"
 
         }
       ]

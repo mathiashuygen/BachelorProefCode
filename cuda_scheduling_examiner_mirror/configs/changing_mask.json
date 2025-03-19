@@ -1,5 +1,5 @@
 {
-  "name": "busy kernel test",
+  "name": "changing mask test"
   "comment": "This config is just for testing the busy-kernel benchmark",
   "max_iterations": 1,
   "max_time": 0,

@@ -88,13 +88,13 @@ int main() {
     
     // Launch the kernel
     firstKernel<<<numBlocks, threadsPerBlock, 0, stream>>>(d_aptr, d_bptr, d_cptr, N);
-
+    std::cout<<"after kernel";
     
     //wait for gpu to finish executing
     cudaDeviceSynchronize();
     
 
-    //copy result from device memory to host memory.
+    //copy result from device memory to host memory Implicit memory transfer..
     C = d_C; 
 
 

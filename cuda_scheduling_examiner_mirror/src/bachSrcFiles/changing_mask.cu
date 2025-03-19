@@ -204,6 +204,7 @@ static int initKernelConfigs(TaskState *state, char * info){
     state->smMask1 = mask1;
     state->smMask2 = mask2;
 
+    
   }
   
 
