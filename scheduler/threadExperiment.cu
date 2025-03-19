@@ -30,7 +30,8 @@ class thread_obj{
 
       maxUtilizationKernel<<<totalBlocks, threadsPerBlock, 0, threadStream>>>(d_output, n, loopDuration);
       cudaFree(d_output);
-      
+      cudaStreamSynchronize(threadStream);
+      cudaStreamDestroy(threadStream);
       std::cout<<"done executing kernel in thread: "<<threadID <<"\n";
 
     }
@@ -59,7 +60,7 @@ int main()
   
     //spawn threads 
     std::thread thread1(thread_obj(), totalBlocks, threadsPerBlock, n, 1000000, 1);
-    std::thread thread2(thread_obj(), totalBlocks, threadsPerBlock, n, 100, 2);
+    std::thread thread2(thread_obj(), totalBlocks, threadsPerBlock, n, 10, 2);
     
 
     thread1.join();
