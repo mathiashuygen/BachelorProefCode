@@ -23,14 +23,13 @@ void sleep(int miliSeconds){
 
 int main(){
   
-  
-  Task t1(1, 2, 3, 4, executeJob, 1);
+  Task<int, int> task(10, 5, 20, 100, printJobExec, 1);
   
   while(true){
-    
-    t1.launchJob();
+      
+    task.execute(1, 1);
+
     sleep(1000);
-  
   }
 
 
