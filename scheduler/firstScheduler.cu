@@ -7,29 +7,25 @@
 
 
 
-
-
-
-
-
-
 void sleep(int miliSeconds){
   std::this_thread::sleep_for(std::chrono::milliseconds(miliSeconds));
 
 }
 
 
-
-
 int main(){
   
-  Task<int, int> task(10, 5, 20, 100, printJobExec, 1, std::chrono::system_clock::now(), std::chrono::system_clock::now());
+  Task<int, int, int> task1(10, 5, 20, 100, printJobExec, 1, std::chrono::system_clock::now(), std::chrono::system_clock::now());
+  Task<int, int, int> task2(10, 5, 20, 100, printJobExec, 2, std::chrono::system_clock::now(), std::chrono::system_clock::now());
+
   
   while(true){
     
-    task.execute(1, 1);
+    task1.execute(1, 1, 1000000);
+    task2.execute(2, 1, 10);
 
-    sleep(1000);
+
+    sleep(3000);
   }
 
 

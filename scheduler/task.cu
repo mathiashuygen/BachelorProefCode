@@ -12,6 +12,10 @@
  */
 
 
+/*
+ * base class to extend. Used this to be able to provide jobs to the task and have them take 
+ * any amount of arguments of any type.
+ * */
 class TaskBase{
   public:
     virtual void launchJob() = 0;
@@ -19,8 +23,10 @@ class TaskBase{
 
     template<typename... Args>
     void execute(Args&&... args){
+      //forward the arguments to the job
       this->args = std::make_tuple(std::forward<Args>(args)...);
       launchJob();
+      return;
     }
 
 
@@ -32,7 +38,9 @@ class TaskBase{
 
 };
 
-
+/*
+ *  Task class that implements the abstract class.
+ * */
 template<typename... FuncArgs>
 class Task: public TaskBase{
   private:
@@ -49,12 +57,14 @@ class Task: public TaskBase{
     Task(int offset, int compute_time, int rel_deadline, int period, std::function<void(FuncArgs...)>job, int id, std::chrono::system_clock::time_point beginTime, std::chrono::system_clock::time_point currentTime)
       :offset(offset), compute_time(compute_time), rel_deadline(rel_deadline), period(period), job(job), id(id), beginTime(beginTime), currentTime(currentTime) {}
     
+
     void launchJob() override{
       if(!firstJobReleased){
         firstJobReleased = true;
       }
       auto& args_tuple = std::any_cast<std::tuple<FuncArgs...>&>(args);
       std::apply(job, args_tuple);
+      return;
     }
 
     int get_offset(){
@@ -71,6 +81,10 @@ class Task: public TaskBase{
 
     int get_period(){
       return this->period;
+    }
+
+    int get_id(){
+      return this->id;
     }
    
 };
