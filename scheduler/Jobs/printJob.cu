@@ -9,18 +9,21 @@
 template<typename... FuncArgs>
 class PrintJob: public Job{
   private:
-    int minimumCores, maximumCores;
+  
+
+
 
     struct printKernelLaunchInformation {
-      cudaStream_t kernelStream;
-      float* devicePtr;    // Device memory pointer
-      float* hostPtr;      // Host memory pointer
-      size_t size;        // Size of data to copy in bytes
-      int taskId;         //id of  the task invoking jobs.
+      cudaStream_t kernelStream; //stream in which the kernel is launched. 
+      float*       devicePtr;    // Device memory pointer
+      float*       hostPtr;      // Host memory pointer
+      size_t       size;         // Size of data to copy in bytes
+      int          taskId;       //id of  the task invoking jobs.
     
 
       printKernelLaunchInformation(cudaStream_t stream, float* dptr, float* hptr, size_t sz, int id)
-        : kernelStream(stream), devicePtr(dptr), hostPtr(hptr), size(sz), taskId(id){}
+        : kernelStream(stream), devicePtr(dptr), hostPtr(hptr), size(sz), taskId(id){
+        }
 
     };
 
@@ -35,7 +38,7 @@ class PrintJob: public Job{
       //copy the result from device to host.
       cudaMemcpy(kernelInfo->hostPtr, kernelInfo->devicePtr, kernelInfo->size, cudaMemcpyDeviceToHost);
 
-      std::cout<<"job from task "<<kernelInfo->taskId<<" took "<<*(kernelInfo->hostPtr)<<"s\n";
+      std::cout<<"print job from task "<<kernelInfo->taskId<<" took "<<*(kernelInfo->hostPtr)<<"s\n";
   
       //free the dynamically allocated memory and the stream.
       free(kernelInfo->hostPtr);
@@ -66,16 +69,20 @@ class PrintJob: public Job{
 
   
 
-    printMessage<<<1, 1, 0, kernel_stream>>>(taskId, jobId, loopDuration, d_output);
-    addPrintKernelCallback(kernel_stream, d_output, h_output, sizeof(float), taskId);
+      printMessage<<<1, 1, 0, kernel_stream>>>(taskId, jobId, loopDuration, d_output);
+      addPrintKernelCallback(kernel_stream, d_output, h_output, sizeof(float), taskId);
 
-    return;
+      return;
 
     }
 
 
-    PrintJob(int minimumCores, int maximumCores): minimumCores(minimumCores), maximumCores(maximumCores)
-    {} 
+    PrintJob(int minimumTPCs, int maximumTPCs)
+    {
+      this->minimumTPCs = minimumTPCs;
+      this->maximumTPCs = maximumTPCs;
+    } 
+
 
 
 

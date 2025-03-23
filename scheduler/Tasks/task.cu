@@ -1,8 +1,11 @@
 #include <iostream>
 #include <cuda_runtime.h>
 #include <memory>
+#include <random>
 #include "../common/helpFunctions.h"
 #include "../Jobs/job.h"
+
+
 /**
  * Representation of a task. Includes all the necessary elements of a PERIODIC task.
  *
@@ -36,16 +39,31 @@ class Task{
     bool isJobReady(){
       float currentTime = getCurrentTime();
       if(!firstJobReleased){
-
-        std::cout<<"currentTime: "<<currentTime<<"\n"; 
-        std::cout<<"beginTime: "<<beginTime<<"\n";
-        std::cout<<"offset: "<<this->offset<<"\n\n";
         return currentTime - beginTime >= offset;
-      
+        
       }
       else{
         return currentTime - previousJobRelease >= period;
       }
+    }
+
+
+
+    Job* releaseJob(){
+      //get a random absolute deadline. 
+      std::random_device rd;
+      std::mt19937 gen(rd());
+      std::uniform_real_distribution<float> realDist(1.0, this->rel_deadline);
+      
+      float absoluteDeadline = realDist(gen);
+      
+
+      this->job->setAbsoluteDeadline(absoluteDeadline); 
+      //reset the begin time;
+      this->beginTime = getCurrentTime();
+      
+
+      return this->job.get();
     }
 
     int get_offset(){
