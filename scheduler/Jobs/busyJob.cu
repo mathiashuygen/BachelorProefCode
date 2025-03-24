@@ -64,14 +64,6 @@ class BusyJob: public Job{
 
   public:
 
-
-
-
-
-
-
-
-
     //job definition that goes with a task.
     static void executeJob(int taskId, int jobId, int loopDuration){
       // Get device cudaGetDeviceProperties

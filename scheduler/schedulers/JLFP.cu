@@ -48,7 +48,20 @@ class JLFP: public BaseScheduler{
   public:
     void dispatch() override{
       while(!priorityQueue.empty()){
-        //TODO
+        //loop over the queues in a decreasing priority order.
+        std::queue<Job*> currJobQueue = priorityQueue.back().jobs; 
+        while(!currJobQueue.empty()){
+          //if there are no remaining TPCs, wait for any to free up, also check if there are enough available TPCs left
+          //to execute the job's kernel.
+          if(this->TPCsInUse < this->deviceTPCs && currJobQueue.front()->minimumTPCs + this->TPCsInUse <= this->deviceTPCs){
+            Job* currJob = currJobQueue.front();
+            currJobQueue.pop();
+            currJob->execute(10, 10, 10000);
+            std::cout<<"launched a job's kernel\n";
+            this->TPCsInUse = this->TPCsInUse + currJob->maximumTPCs;
+          }
+       }
+
       }
     }
     
@@ -73,7 +86,7 @@ class JLFP: public BaseScheduler{
       if(priorityQueue.empty()){
         jobQueue jobqueue = createNewJobQueu(job);
         priorityQueue.push_back(jobqueue);
-        //std::cout<<"queue was empty, thus added at to the front with level: "<<job->getAbsoluteDeadline()<<"\n";
+        std::cout<<"queue was empty, thus added at to the front with level: "<<job->getAbsoluteDeadline()<<"\n";
         return;
       }
 
@@ -83,26 +96,26 @@ class JLFP: public BaseScheduler{
 
         if(jobAbsoluteDeadline == currJobqueue.priorityLevel){
           currJobqueue.jobs.push(job);
-          //std::cout<<"found matching queue at level: "<<jobAbsoluteDeadline<<" to the job queue\n";
+          std::cout<<"found matching queue at level: "<<jobAbsoluteDeadline<<" to the job queue\n";
           return;
         }
         else if(i == 0 && jobAbsoluteDeadline > priorityQueue.begin()->priorityLevel){
           jobQueue jobqueue = createNewJobQueu(job); 
           priorityQueue.insert(priorityQueue.begin(), jobqueue);
-          //std::cout<<"job with new lowest priority added at level: "<<jobAbsoluteDeadline<<"\n";
+          std::cout<<"job with new lowest priority added at level: "<<jobAbsoluteDeadline<<"\n";
           return;
 
         }
         else if(i == priorityQueue.size() - 1){
           jobQueue jobqueue = createNewJobQueu(job);
           priorityQueue.push_back(jobqueue);
-          //std::cout<<"found new highest priority, added to the end with level: "<< jobAbsoluteDeadline <<"\n";
+          std::cout<<"found new highest priority, added to the end with level: "<< jobAbsoluteDeadline <<"\n";
           return;
         }
         else if(i != 0 && jobAbsoluteDeadline < priorityQueue.at(i - 1).priorityLevel && jobAbsoluteDeadline > priorityQueue.at(i).priorityLevel){
           jobQueue jobqueue = createNewJobQueu(job);
           priorityQueue.insert(priorityQueue.begin() + i, jobqueue);
-          //std::cout<<"found new priority in the middle of the queues at level: "<<jobAbsoluteDeadline<<"\n";
+          std::cout<<"found new priority in the middle of the queues at level: "<<jobAbsoluteDeadline<<"\n";
           return;
         }
       }

@@ -5,7 +5,7 @@
 #include <tuple>
 #include <utility>
 #include <any>
-
+#include <memory>
 
 
 
@@ -16,6 +16,8 @@ class Job{
 
   private:
     float releaseTime, maximalExecutionTime, absoluteDeadline;
+
+    
 
 
   public:

@@ -57,6 +57,7 @@ class PrintJob: public Job{
     }
 
   public:
+
     
     //job execute function.
    static void executeJob(int taskId, int jobId, int loopDuration){
@@ -81,6 +82,8 @@ class PrintJob: public Job{
     {
       this->minimumTPCs = minimumTPCs;
       this->maximumTPCs = maximumTPCs;
+      
+      
     } 
 
 
