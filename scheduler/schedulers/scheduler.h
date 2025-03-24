@@ -6,7 +6,7 @@
 class BaseScheduler{
 
   protected:
-    int deviceTPCs, SMsPerTPC;
+    int deviceTPCs, SMsPerTPC, TPCsInUse;
   
 
 
