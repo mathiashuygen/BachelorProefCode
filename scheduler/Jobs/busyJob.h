@@ -1,7 +1,10 @@
 #include <iostream>
 #include <cuda_runtime.h>
-#include "kernels/busyKernel.cu"
+#include "kernels/busyKernel.h"
 #include "job.h"
+
+#ifndef BUSY_JOB_H
+#define BUSY_JOB_H  
 
 
 
@@ -108,4 +111,4 @@ class BusyJob: public Job{
 
 
 
-
+#endif

@@ -1,11 +1,10 @@
+#include "busyKernel.h"
+
 
 
 // Kernel that performs a simple computation, in this case only one thread will execute the kernel (testng sake).
-__global__ void maxUtilizationKernel(float* output, float* timer, int loopDuration)
-{
+__global__ void maxUtilizationKernel(float* output, float* timer, int loopDuration){
     
-  
-
     float beginTime = clock64();
     
     // Some computations to keep the SM busy

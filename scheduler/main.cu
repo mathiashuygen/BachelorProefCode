@@ -2,11 +2,11 @@
 #include <cuda_runtime.h>
 #include <memory>
 #include "Tasks/task.cu"
-#include "Jobs/printJob.cu"
-#include "Jobs/busyJob.cu"
+#include "Jobs/printJob.h"
+#include "Jobs/busyJob.h"
 #include "Jobs/jobFactory.h"
 #include "common/helpFunctions.h"
-#include "schedulers/JLFP.cu"
+#include "schedulers/JLFP.h"
 
 int main(){
   
@@ -31,7 +31,7 @@ int main(){
         scheduler1.addJob(task->releaseJob());
       }
     }
-    scheduler1.displayQueuePriorities();
+    scheduler1.displayQueueJobs();
     scheduler1.dispatch();
     sleep(2000);
 

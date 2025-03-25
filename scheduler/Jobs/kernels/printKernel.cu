@@ -1,5 +1,8 @@
+#include "printKernel.h"
 
-__global__ static void printMessage(int taskId, int jobId, int loopDuration, float* timing){
+
+
+__global__ void printMessage(int taskId, int jobId, int loopDuration, float* timing){
   
   float startTime = clock64();
   for(int i = 0; i < loopDuration; i++){

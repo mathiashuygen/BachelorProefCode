@@ -3,8 +3,13 @@
 #include <cstdlib>
 #include <iostream>
 #include <cuda_runtime.h>
-#include "kernels/printKernel.cu"
+#include "kernels/printKernel.h"
 #include "job.h"
+
+
+#ifndef PRINT_JOB_H
+#define PRINT_JOB_H
+
 
 template<typename... FuncArgs>
 class PrintJob: public Job{
@@ -68,7 +73,7 @@ class PrintJob: public Job{
       float *h_output = (float*)std::malloc(sizeof(float));
       cudaMalloc(&d_output, sizeof(float));
 
-  
+     
 
       printMessage<<<1, 1, 0, kernel_stream>>>(taskId, jobId, loopDuration, d_output);
       addPrintKernelCallback(kernel_stream, d_output, h_output, sizeof(float), taskId);
@@ -97,3 +102,5 @@ class PrintJob: public Job{
 
 };
 
+
+#endif
