@@ -10,7 +10,7 @@
 /*
  *  Task class that implements the abstract class.
  * */
-Task::Task(int offset, int compute_time, int rel_deadline, int period, std::unique_ptr<JobFactory> jobFactory, int id)
+Task::Task(int offset, int compute_time, int rel_deadline, int period, std::unique_ptr<JobFactoryBase> jobFactory, int id)
       :offset(offset), compute_time(compute_time), rel_deadline(rel_deadline), period(period), jobFactory(std::move(jobFactory)), id(id), beginTime(getCurrentTime()) {
 
 }

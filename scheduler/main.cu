@@ -13,8 +13,8 @@ int main(){
   
   std::vector<Task*> tasks;
 
-  auto printJobFactory = TemplatedJobFactoryHelper<PrintJob, int, int, int>::create(10, 10); 
-  auto busyJobFactory = TemplatedJobFactoryHelper<BusyJob, int, int, int>::create(10, 10);
+  auto printJobFactory = JobFactory<PrintJob, int, int, int>::create(10, 10); 
+  auto busyJobFactory = JobFactory<BusyJob, int, int, int>::create(10, 10);
 
   Task task1(10, 5, 20, 100, std::move(printJobFactory), 1);
   Task task2(10, 5, 20, 100, std::move(busyJobFactory), 2);

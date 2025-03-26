@@ -13,11 +13,11 @@ private:
     int id;
     bool firstJobReleased = false;
     std::unique_ptr<Job> job;
-    std::unique_ptr<JobFactory> jobFactory;
+    std::unique_ptr<JobFactoryBase> jobFactory;
 
 public:
     Task(int offset, int compute_time, int rel_deadline, int period,
-         std::unique_ptr<JobFactory> jobFactory, int id);
+         std::unique_ptr<JobFactoryBase> jobFactory, int id);
     bool isJobReady();
     Job* releaseJob();
     int get_offset();

@@ -6,15 +6,15 @@
 #include "job.h"
 
 // Base factory interface
-class JobFactory {
+class JobFactoryBase {
 public:
     virtual std::unique_ptr<Job> createJob() = 0;
-    virtual ~JobFactory() = default;
+    virtual ~JobFactoryBase() = default;
 };
 
 // Templated factory for jobs with FuncArgs and CtorArgs
 template<typename JobConcrete, typename... CtorArgs>
-class TemplatedJobFactory : public JobFactory {
+class TemplatedJobFactory : public JobFactoryBase {
 private:
     std::tuple<CtorArgs...> ctorArgs;
 
@@ -31,10 +31,10 @@ public:
 
 // Helper to simplify factory creation
 template<template<typename...> class JobType, typename... FuncArgs>
-class TemplatedJobFactoryHelper {
+class JobFactory {
 public:
     template<typename... CtorArgs>
-    static std::unique_ptr<JobFactory> create(CtorArgs&&... args) {
+    static std::unique_ptr<JobFactoryBase> create(CtorArgs&&... args) {
         using ConcreteJob = JobType<FuncArgs...>;
         return std::make_unique<TemplatedJobFactory<ConcreteJob, CtorArgs...>>(
             std::forward<CtorArgs>(args)...

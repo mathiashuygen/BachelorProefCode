@@ -21,13 +21,13 @@ void JLFP::dispatch(){
     while(!currJobQueue.empty()){
       //if there are no remaining TPCs, wait for any to free up, also check if there are enough available TPCs left
       //to execute the job's kernel.
-      if(this->TPCsInUse < this->deviceTPCs && currJobQueue.front()->maximumTPCs + this->TPCsInUse <= this->deviceTPCs){
+      if(this->TPCsInUse < this->deviceTPCs && currJobQueue.front()->getMaximumTpcs() + this->TPCsInUse <= this->deviceTPCs){
         Job* currJob = currJobQueue.front();
         currJobQueue.pop();
-        this->TPCsInUse = this->TPCsInUse + currJob->maximumTPCs;
-        currJob->execute(10, 10, 10000);
+        this->TPCsInUse = this->TPCsInUse + currJob->getMaximumTpcs();
+        currJob->execute();
         std::cout<<"launched a job's kernel\n";
-        this->TPCsInUse = this->TPCsInUse - currJob->maximumTPCs;
+        this->TPCsInUse = this->TPCsInUse - currJob->getMaximumTpcs();
       }
     }
     priorityQueue.pop_back();
