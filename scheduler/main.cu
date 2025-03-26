@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cuda_runtime.h>
 #include <memory>
-#include "Tasks/task.cu"
+#include "Tasks/task.h"
 #include "Jobs/printJob.h"
 #include "Jobs/busyJob.h"
 #include "Jobs/jobFactory.h"

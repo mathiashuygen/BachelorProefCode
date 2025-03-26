@@ -1,3 +1,6 @@
+#ifndef PRINT_JOB_H
+#define PRINT_JOB_H
+
 #include <any>
 #include <cstddef>
 #include <cstdlib>
@@ -5,10 +8,6 @@
 #include <cuda_runtime.h>
 #include "kernels/printKernel.h"
 #include "job.h"
-
-
-#ifndef PRINT_JOB_H
-#define PRINT_JOB_H
 
 
 template<typename... FuncArgs>
