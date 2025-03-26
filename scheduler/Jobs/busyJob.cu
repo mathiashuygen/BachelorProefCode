@@ -4,7 +4,7 @@
     void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream, cudaError_t status, void *data){
 
       //get the kernel launch config that has to be cleaned up and that contains info to display.
-      busyKernelLaunchInformation* kernelInfo = static_cast<busyKernelLaunchInformation*>(data);
+      BusyJob::busyKernelLaunchInformation* kernelInfo = static_cast<BusyJob::busyKernelLaunchInformation*>(data);
   
       //copy the result from device to host.
       cudaMemcpy(kernelInfo->hostPtr, kernelInfo->devicePtr, kernelInfo->size, cudaMemcpyDeviceToHost);
@@ -23,7 +23,7 @@
     //callback constructor.
     void BusyJob::addBusyKernelCallback(cudaStream_t stream, float* dptr, float* timerDptr, float* hptr, size_t size, int id){
 
-      busyKernelLaunchInformation* kernelInfo = new busyKernelLaunchInformation(stream, dptr, timerDptr, hptr, size, id);
+      BusyJob::busyKernelLaunchInformation* kernelInfo = new BusyJob::busyKernelLaunchInformation(stream, dptr, timerDptr, hptr, size, id);
 
       cudaStreamAddCallback(stream, busyKernelCallback, kernelInfo, 0);
 
@@ -62,8 +62,11 @@
 
 
 
-BusyJob::BusyJob(int minimumTPCs, int maximumTPCs): minimumTPCs(minimumTPCs), maximumTPCs(maximumTPCs)
-    {} 
+BusyJob::BusyJob(int minimumTPCs, int maximumTPCs)
+    {
+      this->maximumTPCs = maximumTPCs;
+      this->minimumTPCs = minimumTPCs;
+    } 
 
 
 

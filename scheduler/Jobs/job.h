@@ -18,13 +18,11 @@ class Job{
     float releaseTime, maximalExecutionTime, absoluteDeadline;
 
     
-  protected:
-    int minimumTPCs, maximumTPCs;
 
   public:
     //On NVIDIA GPUs, the amount of TPCs allocated to a single kernel can be set. These are the equivalent of the CPU cores allocated
     //to a specific job. 
-  
+    int minimumTPCs, maximumTPCs;
     //run time information of a job. Gets defined when a task releases a job. 
     
     //method that has to be overridden by the derrived classes. 

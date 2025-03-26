@@ -8,7 +8,7 @@
     void CUDART_CB PrintJob::printKernelCallback(cudaStream_t stream, cudaError_t status, void *data){
 
       //get the kernel launch config that has to be cleaned up and that contains info to display.
-      printKernelLaunchInformation* kernelInfo = static_cast<printKernelLaunchInformation*>(data);
+      PrintJob::printKernelLaunchInformation* kernelInfo = static_cast<PrintJob::printKernelLaunchInformation*>(data);
   
       //copy the result from device to host.
       cudaMemcpy(kernelInfo->hostPtr, kernelInfo->devicePtr, kernelInfo->size, cudaMemcpyDeviceToHost);
@@ -26,7 +26,7 @@
     //callback constructor.
     void PrintJob::addPrintKernelCallback(cudaStream_t stream, float* dptr, float* hptr, size_t size, int id){
 
-      printKernelLaunchInformation* kernelInfo = new printKernelLaunchInformation(stream, dptr, hptr, size, id);
+      PrintJob::printKernelLaunchInformation* kernelInfo = new PrintJob::printKernelLaunchInformation(stream, dptr, hptr, size, id);
 
       cudaStreamAddCallback(stream, printKernelCallback, kernelInfo, 0);
     }

@@ -31,7 +31,7 @@ class PrintJob: public Job{
     
 
   public:
-    virtual void execute() = 0;
+    virtual void execute() override;
 
     PrintJob(int minimumTPCs, int maximumTPCs);  
 

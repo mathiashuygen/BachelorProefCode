@@ -2,44 +2,40 @@
 #define JOB_FACTORY_H
 
 #include <memory>
-#include <tuple>
+#include <utility>
 #include "job.h"
 
-// Base factory interface
 class JobFactoryBase {
 public:
-    virtual std::unique_ptr<Job> createJob() = 0;
+    virtual std::unique_ptr<Job> createJob() const = 0;
     virtual ~JobFactoryBase() = default;
 };
 
-// Templated factory for jobs with FuncArgs and CtorArgs
-template<typename JobConcrete, typename... CtorArgs>
-class TemplatedJobFactory : public JobFactoryBase {
+// Concrete job factory implementation
+template<typename JobType, typename... ConstructorArgs>
+class JobFactory : public JobFactoryBase {
 private:
-    std::tuple<CtorArgs...> ctorArgs;
+    // Store constructor arguments as a tuple
+    std::tuple<ConstructorArgs...> constructorArgs;
 
 public:
-    explicit TemplatedJobFactory(CtorArgs... args) 
-        : ctorArgs(std::forward<CtorArgs>(args)...) {}
+    // Constructor to store arguments
+    explicit JobFactory(ConstructorArgs... args) 
+        : constructorArgs(std::forward<ConstructorArgs>(args)...) {}
 
-    std::unique_ptr<Job> createJob() override {
-        return std::apply([](auto&&... params) {
-            return std::make_unique<JobConcrete>(std::forward<decltype(params)>(params)...);
-        }, ctorArgs);
+    // Override createJob method
+    std::unique_ptr<Job> createJob() const override {
+        // Use std::apply to unpack the tuple and call the constructor
+        return std::apply([](auto&&... args) {
+            return std::make_unique<JobType>(std::forward<decltype(args)>(args)...);
+        }, constructorArgs);
+    }
+
+    // Static method to create a factory
+    static std::unique_ptr<JobFactoryBase> create(ConstructorArgs... args) {
+        return std::make_unique<JobFactory>(std::forward<ConstructorArgs>(args)...);
     }
 };
 
-// Helper to simplify factory creation
-template<template<typename...> class JobType, typename... FuncArgs>
-class JobFactory {
-public:
-    template<typename... CtorArgs>
-    static std::unique_ptr<JobFactoryBase> create(CtorArgs&&... args) {
-        using ConcreteJob = JobType<FuncArgs...>;
-        return std::make_unique<TemplatedJobFactory<ConcreteJob, CtorArgs...>>(
-            std::forward<CtorArgs>(args)...
-        );
-    }
-};
 
 #endif
