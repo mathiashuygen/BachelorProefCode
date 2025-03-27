@@ -1,4 +1,5 @@
 #include "job.h"
+#include "jobObserver.h"
 
 void Job::setMaximumExecutionTime(float time){
   this->releaseTime = time;
@@ -46,4 +47,17 @@ int Job::getThreadsPerBlock(){
 
 int Job::getThreadBlocks(){
   return this->threadBlocks;
+}
+
+
+JobObserver* Job::observer = nullptr;
+
+void Job::setJobObserver(JobObserver* JobObserver){
+  observer = JobObserver;
+}
+
+void Job::notifyJobCompletion(Job *job){
+  if(observer){
+    observer->onJobCompletion(job);
+  }
 }

@@ -27,7 +27,7 @@ int main(){
         scheduler1.addJob(task.releaseJob());
       }
     }
-    scheduler1.displayQueueJobs();
+    //scheduler1.displayQueueJobs();
     scheduler1.dispatch();
     sleep(2000);
   }

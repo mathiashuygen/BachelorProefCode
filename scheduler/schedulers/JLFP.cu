@@ -4,7 +4,7 @@
 
 
 #include "JLFP.h"
-
+#include "../common/helpFunctions.h"
 
 JLFP::jobQueue JLFP::createNewJobQueu(Job* job){
   std::queue<Job*> jobs;
@@ -25,13 +25,22 @@ void JLFP::dispatch(){
         Job* currJob = currJobQueue.front();
         currJobQueue.pop();
         this->TPCsInUse = this->TPCsInUse + currJob->getMaximumTpcs();
+        std::cout<<"TPCs in use = "<<this->TPCsInUse<<"\n";
+        //set the observer. Used to notify the scheduler of the job's completion.
+        //When a job is finished with executing its kernel, the job notifies to scheduler which will perform
+        //a clean-up. 
+        currJob->setJobObserver(this);
         currJob->execute();
-        std::cout<<"launched a job's kernel\n";
-        this->TPCsInUse = this->TPCsInUse - currJob->getMaximumTpcs();
       }
     }
     priorityQueue.pop_back();
   }
+}
+
+
+void JLFP::onJobCompletion(Job* job){
+  this->TPCsInUse -= job->getMaximumTpcs();
+  std::cout<<"TPCs in use after completion of the job: "<<this->TPCsInUse<<"\n";
 }
 
 
@@ -56,7 +65,7 @@ void JLFP::addJob(Job* job){
   if(priorityQueue.empty()){
     jobQueue jobqueue = createNewJobQueu(job);
     priorityQueue.push_back(jobqueue);
-    std::cout<<"queue was empty, thus added to the front with level: "<<job->getAbsoluteDeadline()<<"\n";
+    //std::cout<<"queue was empty, thus added to the front with level: "<<job->getAbsoluteDeadline()<<"\n";
     return;
   }
 
@@ -66,25 +75,25 @@ void JLFP::addJob(Job* job){
 
     if(jobAbsoluteDeadline == currJobqueue.priorityLevel){
       priorityQueue.at(i).jobs.push(job);
-      std::cout<<"found matching queue at level: "<<jobAbsoluteDeadline<<" to the job queue\n";
+      //std::cout<<"found matching queue at level: "<<jobAbsoluteDeadline<<" to the job queue\n";
       return;
     }
     else if(i == 0 && jobAbsoluteDeadline > priorityQueue.begin()->priorityLevel){
       jobQueue jobqueue = createNewJobQueu(job); 
       priorityQueue.insert(priorityQueue.begin(), jobqueue);
-      std::cout<<"job with new lowest priority added at level: "<<jobAbsoluteDeadline<<"\n";
+      //std::cout<<"job with new lowest priority added at level: "<<jobAbsoluteDeadline<<"\n";
       return;
     }
     else if(i == priorityQueue.size() - 1){
       jobQueue jobqueue = createNewJobQueu(job);
       priorityQueue.push_back(jobqueue);
-      std::cout<<"found new highest priority, added to the end with level: "<< jobAbsoluteDeadline <<"\n";
+      //std::cout<<"found new highest priority, added to the end with level: "<< jobAbsoluteDeadline <<"\n";
       return;
     }
     else if(i != 0 && jobAbsoluteDeadline < priorityQueue.at(i - 1).priorityLevel && jobAbsoluteDeadline > priorityQueue.at(i).priorityLevel){
       jobQueue jobqueue = createNewJobQueu(job);
       priorityQueue.insert(priorityQueue.begin() + i, jobqueue);
-      std::cout<<"found new priority in the middle of the queues at level: "<<jobAbsoluteDeadline<<"\n";
+      //std::cout<<"found new priority in the middle of the queues at level: "<<jobAbsoluteDeadline<<"\n";
       return;
     }
   }
@@ -117,8 +126,6 @@ JLFP::JLFP(){
   this->deviceTPCs = deviceProp.multiProcessorCount/SMsPerTPC;
   this->TPCsInUse = 0;
 }
-
-
 
 
 

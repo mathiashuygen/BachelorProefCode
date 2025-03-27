@@ -13,20 +13,22 @@ void CUDART_CB PrintJob::printKernelCallback(cudaStream_t stream, cudaError_t st
   //copy the result from device to host.
   cudaMemcpy(kernelInfo->hostPtr, kernelInfo->devicePtr, kernelInfo->size, cudaMemcpyDeviceToHost);
 
-  std::cout<<"print job from task "<<kernelInfo->taskId<<" took "<<*(kernelInfo->hostPtr)<<"s\n";
+  //std::cout<<"print job from task "<<kernelInfo->taskId<<" took "<<*(kernelInfo->hostPtr)<<"s\n";
   
   //free the dynamically allocated memory and the stream.
   free(kernelInfo->hostPtr);
   cudaFree(kernelInfo->devicePtr);
   cudaStreamDestroy(stream);
 
+  Job::notifyJobCompletion(kernelInfo->jobPtr);
+
 } 
 
 
 //callback constructor.
-void PrintJob::addPrintKernelCallback(cudaStream_t stream, float* dptr, float* hptr, size_t size, int id){
+void PrintJob::addPrintKernelCallback(Job* job, cudaStream_t stream, float* dptr, float* hptr, size_t size, int id){
 
-  printKernelLaunchInformation* kernelInfo = new printKernelLaunchInformation(stream, dptr, hptr, size, id);
+  printKernelLaunchInformation* kernelInfo = new printKernelLaunchInformation(job, stream, dptr, hptr, size, id);
       cudaStreamAddCallback(stream, printKernelCallback, kernelInfo, 0);
 }
 
@@ -43,7 +45,7 @@ void PrintJob::execute(){
 
 
   printMessage<<<1, 1, 0, kernel_stream>>>(1, 1, 100, d_output);
-  addPrintKernelCallback(kernel_stream, d_output, h_output, sizeof(float), 1);
+  addPrintKernelCallback(this, kernel_stream, d_output, h_output, sizeof(float), 1);
 
   return;
 

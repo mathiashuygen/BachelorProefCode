@@ -8,9 +8,10 @@
 #include <memory>
 #include <queue>
 #include "../Jobs/job.h"
+#include "../Jobs/jobObserver.h"
 #include "scheduler.h"
 
-class JLFP : public BaseScheduler {
+class JLFP : public BaseScheduler, public JobObserver{
 private:
     struct jobQueue {
         int priorityLevel;
@@ -22,6 +23,7 @@ private:
     jobQueue createNewJobQueu(Job* job);
 
 public:
+    void onJobCompletion(Job* job) override;
     void dispatch() override;
     void addJob(Job* job) override;
     void displayQueuePriorities();
