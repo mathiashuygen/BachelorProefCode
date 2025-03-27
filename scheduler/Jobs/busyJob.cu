@@ -1,6 +1,11 @@
-   
 #include "busyJob.h"
-    //callback that is envoked at the end of each kernel execution.
+
+
+
+
+
+
+//callback that is envoked at the end of each kernel execution.
 void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream, cudaError_t status, void *data){
 
   //get the kernel launch config that has to be cleaned up and that contains info to display.

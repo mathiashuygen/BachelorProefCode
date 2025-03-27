@@ -1,17 +1,19 @@
-#include "task.h"
-
-/**
- * Representation of a task. Includes all the necessary elements of a PERIODIC task.
- *
- */
-
-
-
 /*
  *  Task class that implements the abstract class.
  * */
+
+#include "task.h"
+
+
+
+
+
+
+
+
+
 Task::Task(int offset, int compute_time, int rel_deadline, int period, std::unique_ptr<JobFactoryBase> jobFactory, int id)
-      :offset(offset), compute_time(compute_time), rel_deadline(rel_deadline), period(period), jobFactory(std::move(jobFactory)), id(id), beginTime(getCurrentTime()) {
+  :offset(offset), compute_time(compute_time), rel_deadline(rel_deadline), period(period), jobFactory(std::move(jobFactory)), id(id), beginTime(getCurrentTime()) {
 
 }
 

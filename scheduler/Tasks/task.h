@@ -1,3 +1,8 @@
+/**
+ * Representation of a task. Includes all the necessary elements of a PERIODIC task.
+ *
+ */
+
 #ifndef TASK_H
 #define TASK_H
 

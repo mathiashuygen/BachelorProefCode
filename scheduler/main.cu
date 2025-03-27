@@ -16,7 +16,7 @@ int main(){
 
 
   tasks.push_back(Task(10, 10, 20, 70, std::move(printJobFactory), 1));
-  tasks.push_back(Task(10, 10, 60, 100, std::move(busyJobFactory), 1));
+  tasks.push_back(Task(10, 10, 60, 100, std::move(busyJobFactory), 2));
 
   JLFP scheduler1;
 

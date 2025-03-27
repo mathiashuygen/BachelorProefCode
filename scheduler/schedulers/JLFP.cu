@@ -56,7 +56,7 @@ void JLFP::addJob(Job* job){
   if(priorityQueue.empty()){
     jobQueue jobqueue = createNewJobQueu(job);
     priorityQueue.push_back(jobqueue);
-    std::cout<<"queue was empty, thus added at to the front with level: "<<job->getAbsoluteDeadline()<<"\n";
+    std::cout<<"queue was empty, thus added to the front with level: "<<job->getAbsoluteDeadline()<<"\n";
     return;
   }
 
