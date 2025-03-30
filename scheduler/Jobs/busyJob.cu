@@ -1,55 +1,49 @@
 #include "busyJob.h"
+#include "job.h"
 
+// callback that is envoked at the end of each kernel execution.
+void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream,
+                                           cudaError_t status, void *data) {
 
+  // get the kernel launch config that has to be cleaned up and that contains
+  // info to display.
+  BusyJob::busyKernelLaunchInformation *kernelInfo =
+      static_cast<BusyJob::busyKernelLaunchInformation *>(data);
 
+  // copy the result from device to host.
+  cudaMemcpy(kernelInfo->hostPtr, kernelInfo->devicePtr, kernelInfo->size,
+             cudaMemcpyDeviceToHost);
 
+  // std::cout<<"busy job from task "<<kernelInfo->taskId<<" took
+  // "<<*(kernelInfo->hostPtr)<<"s\n";
 
-
-//callback that is envoked at the end of each kernel execution.
-void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream, cudaError_t status, void *data){
-
-  //get the kernel launch config that has to be cleaned up and that contains info to display.
-  BusyJob::busyKernelLaunchInformation* kernelInfo = static_cast<BusyJob::busyKernelLaunchInformation*>(data);
-  
-  //copy the result from device to host.
-  cudaMemcpy(kernelInfo->hostPtr, kernelInfo->devicePtr, kernelInfo->size, cudaMemcpyDeviceToHost);
-
-  //std::cout<<"busy job from task "<<kernelInfo->taskId<<" took "<<*(kernelInfo->hostPtr)<<"s\n";
-  
-  //free the dynamically allocated memory and the stream.
+  // free the dynamically allocated memory and the stream.
   free(kernelInfo->hostPtr);
   cudaFree(kernelInfo->devicePtr);
   cudaFree(kernelInfo->timerDptr);
   cudaStreamDestroy(stream);
-  
+
   Job::notifyJobCompletion(kernelInfo->jobPtr);
-  
-}   
-
-
-//callback constructor.
-void BusyJob::addBusyKernelCallback(Job* job, cudaStream_t stream, float* dptr, float* timerDptr, float* hptr, size_t size, int id){
-
-  BusyJob::busyKernelLaunchInformation* kernelInfo = new BusyJob::busyKernelLaunchInformation(job, stream, dptr, timerDptr, hptr, size, id);
-
-  cudaStreamAddCallback(stream, busyKernelCallback, kernelInfo, 0);
-  
-  
-
-  
 }
 
+// callback constructor.
+void BusyJob::addBusyKernelCallback(Job *job, cudaStream_t stream, float *dptr,
+                                    float *timerDptr, float *hptr, size_t size,
+                                    int id) {
 
-  
+  BusyJob::busyKernelLaunchInformation *kernelInfo =
+      new BusyJob::busyKernelLaunchInformation(job, stream, dptr, timerDptr,
+                                               hptr, size, id);
 
-//job definition that goes with a task.
-void BusyJob::execute(){
+  cudaStreamAddCallback(stream, busyKernelCallback, kernelInfo, 0);
+}
+
+// job definition that goes with a task.
+void BusyJob::execute() {
   // Get device cudaGetDeviceProperties
   cudaDeviceProp deviceProp;
   cudaGetDeviceProperties(&deviceProp, 0);
-    
 
-    
   // Allocate memory
   float *d_output, *d_timer;
   cudaMalloc(&d_output, sizeof(float));
@@ -57,28 +51,17 @@ void BusyJob::execute(){
 
   cudaStream_t kernel_stream;
   cudaStreamCreate(&kernel_stream);
+  // set the stream's mask using libsmctrl.
+  libsmctrl_set_stream_mask(kernel_stream, this->TPCMask);
 
-  float *h_output = (float*)std::malloc(sizeof(float));
-  
-  
+  float *h_output = (float *)std::malloc(sizeof(float));
 
   maxUtilizationKernel<<<1, 1, 0, kernel_stream>>>(d_output, d_timer, 1000);
-  addBusyKernelCallback(this, kernel_stream, d_output, d_timer, h_output, sizeof(float), 1);
+  addBusyKernelCallback(this, kernel_stream, d_output, d_timer, h_output,
+                        sizeof(float), 1);
+}
 
-  return;
-
-} 
-
-
-
-BusyJob::BusyJob(int minimumTPCs, int maximumTPCs){
+BusyJob::BusyJob(int minimumTPCs, int maximumTPCs) {
   this->maximumTPCs = maximumTPCs;
   this->minimumTPCs = minimumTPCs;
-} 
-
-
-
-
-
-
-
+}

@@ -1,131 +1,150 @@
-//JOB LEVEL FIXED PRIORITY scheduler. This means all jobs have their own unique priority at launch time. 
-//Priorities can overlap, it is left to the scheduler on how to deal with this.
-
-
+// JOB LEVEL FIXED PRIORITY scheduler. This means all jobs have their own unique
+// priority at launch time. Priorities can overlap, it is left to the scheduler
+// on how to deal with this.
 
 #include "JLFP.h"
-#include "../common/helpFunctions.h"
 
-JLFP::jobQueue JLFP::createNewJobQueu(Job* job){
-  std::queue<Job*> jobs;
+JLFP::jobQueue JLFP::createNewJobQueu(Job *job) {
+  std::queue<Job *> jobs;
   jobs.push(job);
   jobQueue jobqueue(job->getAbsoluteDeadline(), jobs);
   return jobqueue;
 }
 
+uint64_t JLFP::getTPCMask(int amountOfTPCs) {
+  // 15 X 4 bits, total of 60 bits, indicating which SM to activate for a job.
+  uint64_t allOnes = 0xFFFFFFFF;
+  // shift the bit mask to the left. Does this as many times as there are TPCs
+  // needed.
+  uint64_t neededTPCs = allOnes << amountOfTPCs;
+  // now that enough zeroes for the TPCs have been created, shift the bits to
+  // the left again, but instead of creating zeroes, create ones. This is needed
+  // because if there are TPCs in use, these have to be disabled for the job
+  // that is about to be launched.
+  uint64_t fullMask =
+      (neededTPCs << this->TPCsInUse) | ((1 << this->TPCsInUse) - 1);
 
-void JLFP::dispatch(){
-  while(!priorityQueue.empty()){
-    //loop over the queues in a decreasing priority order.
-    std::queue<Job*> currJobQueue = priorityQueue.back().jobs; 
-    while(!currJobQueue.empty()){
-      //if there are no remaining TPCs, wait for any to free up, also check if there are enough available TPCs left
-      //to execute the job's kernel.
-      if(this->TPCsInUse < this->deviceTPCs && currJobQueue.front()->getMaximumTpcs() + this->TPCsInUse <= this->deviceTPCs){
-        Job* currJob = currJobQueue.front();
+  return fullMask;
+}
+
+void JLFP::dispatch() {
+  while (!priorityQueue.empty()) {
+    // loop over the queues in a decreasing priority order.
+    std::queue<Job *> currJobQueue = priorityQueue.back().jobs;
+    while (!currJobQueue.empty()) {
+      // if there are no remaining TPCs, wait for any to free up, also check if
+      // there are enough available TPCs left to execute the job's kernel.
+      if (currJobQueue.front()->getMaximumTpcs() + this->TPCsInUse <=
+          this->deviceTPCs) {
+        Job *currJob = currJobQueue.front();
         currJobQueue.pop();
         this->TPCsInUse = this->TPCsInUse + currJob->getMaximumTpcs();
-        std::cout<<"TPCs in use = "<<this->TPCsInUse<<"\n";
-        //set the observer. Used to notify the scheduler of the job's completion.
-        //When a job is finished with executing its kernel, the job notifies to scheduler which will perform
-        //a clean-up. 
+        // set the observer. Used to notify the scheduler of the job's
+        // completion. When a job is finished with executing its kernel, the job
+        // notifies to scheduler which will perform a clean-up.
+
         currJob->setJobObserver(this);
+
+        u_int64_t jobMask = getTPCMask(currJob->getMaximumTpcs());
+        currJob->setTPCMask(jobMask);
         currJob->execute();
+        std::cout << "launched a job\n";
       }
     }
     priorityQueue.pop_back();
   }
 }
 
-
-void JLFP::onJobCompletion(Job* job){
+void JLFP::onJobCompletion(Job *job) {
   this->TPCsInUse -= job->getMaximumTpcs();
-  std::cout<<"TPCs in use after completion of the job: "<<this->TPCsInUse<<"\n";
+  std::cout << "job finished execution\n";
 }
 
-
 /*
-* Adding a job to the vector has to take care of multiple scenarios:
-*
-*  -If the vector is empty, a new queue has to be inserted
-*   into the vector.
-*
-*  -If the job that has to be added has a higher priority than any job queues so far, a new job queue has to be 
-*   created and inserted at the end of the vector.
-*
-*  -If the job that has to be added has a lower priority that any job in the queues so far, a new job queue has to be 
-*   created and inserted to the beginning of the vector.
-*
-*  -If the job has a priority that has never been seen before which isn't the lowest of highest one, a new job queue 
-*   has to created and inserted in the middle of the vector between to priorities that are respectively lower and higher 
-*   than the new job's one. 
-*
-* */
-void JLFP::addJob(Job* job){
-  if(priorityQueue.empty()){
+ * Adding a job to the vector has to take care of multiple scenarios:
+ *
+ *  -If the vector is empty, a new queue has to be inserted
+ *   into the vector.
+ *
+ *  -If the job that has to be added has a higher priority than any job queues
+ * so far, a new job queue has to be created and inserted at the end of the
+ * vector.
+ *
+ *  -If the job that has to be added has a lower priority that any job in the
+ * queues so far, a new job queue has to be created and inserted to the
+ * beginning of the vector.
+ *
+ *  -If the job has a priority that has never been seen before which isn't the
+ * lowest of highest one, a new job queue has to created and inserted in the
+ * middle of the vector between to priorities that are respectively lower and
+ * higher than the new job's one.
+ *
+ * */
+void JLFP::addJob(Job *job) {
+  if (priorityQueue.empty()) {
     jobQueue jobqueue = createNewJobQueu(job);
     priorityQueue.push_back(jobqueue);
-    //std::cout<<"queue was empty, thus added to the front with level: "<<job->getAbsoluteDeadline()<<"\n";
+    // std::cout<<"queue was empty, thus added to the front with level:
+    // "<<job->getAbsoluteDeadline()<<"\n";
     return;
   }
 
-  for(size_t i = 0; i < priorityQueue.size(); ++i){
+  for (size_t i = 0; i < priorityQueue.size(); ++i) {
     jobQueue currJobqueue = priorityQueue.at(i);
     float jobAbsoluteDeadline = job->getAbsoluteDeadline();
 
-    if(jobAbsoluteDeadline == currJobqueue.priorityLevel){
+    if (jobAbsoluteDeadline == currJobqueue.priorityLevel) {
       priorityQueue.at(i).jobs.push(job);
-      //std::cout<<"found matching queue at level: "<<jobAbsoluteDeadline<<" to the job queue\n";
+      // std::cout<<"found matching queue at level: "<<jobAbsoluteDeadline<<" to
+      // the job queue\n";
       return;
-    }
-    else if(i == 0 && jobAbsoluteDeadline > priorityQueue.begin()->priorityLevel){
-      jobQueue jobqueue = createNewJobQueu(job); 
+    } else if (i == 0 &&
+               jobAbsoluteDeadline > priorityQueue.begin()->priorityLevel) {
+      jobQueue jobqueue = createNewJobQueu(job);
       priorityQueue.insert(priorityQueue.begin(), jobqueue);
-      //std::cout<<"job with new lowest priority added at level: "<<jobAbsoluteDeadline<<"\n";
+      // std::cout<<"job with new lowest priority added at level:
+      // "<<jobAbsoluteDeadline<<"\n";
       return;
-    }
-    else if(i == priorityQueue.size() - 1){
+    } else if (i == priorityQueue.size() - 1) {
       jobQueue jobqueue = createNewJobQueu(job);
       priorityQueue.push_back(jobqueue);
-      //std::cout<<"found new highest priority, added to the end with level: "<< jobAbsoluteDeadline <<"\n";
+      // std::cout<<"found new highest priority, added to the end with level:
+      // "<< jobAbsoluteDeadline <<"\n";
       return;
-    }
-    else if(i != 0 && jobAbsoluteDeadline < priorityQueue.at(i - 1).priorityLevel && jobAbsoluteDeadline > priorityQueue.at(i).priorityLevel){
+    } else if (i != 0 &&
+               jobAbsoluteDeadline < priorityQueue.at(i - 1).priorityLevel &&
+               jobAbsoluteDeadline > priorityQueue.at(i).priorityLevel) {
       jobQueue jobqueue = createNewJobQueu(job);
       priorityQueue.insert(priorityQueue.begin() + i, jobqueue);
-      //std::cout<<"found new priority in the middle of the queues at level: "<<jobAbsoluteDeadline<<"\n";
+      // std::cout<<"found new priority in the middle of the queues at level:
+      // "<<jobAbsoluteDeadline<<"\n";
       return;
     }
   }
 }
 
-
-void JLFP::displayQueuePriorities(){
-  for(jobQueue jobqueue : priorityQueue){
-    std::cout<<jobqueue.priorityLevel<<", ";
+void JLFP::displayQueuePriorities() {
+  for (jobQueue jobqueue : priorityQueue) {
+    std::cout << jobqueue.priorityLevel << ", ";
   }
-  std::cout<<"\n";
+  std::cout << "\n";
 }
 
-void JLFP::displayQueueJobs(){
-  for(jobQueue jobqueue : priorityQueue){
-    std::queue<Job*> currJobs = jobqueue.jobs;
-    while(!currJobs.empty()){
-      std::cout<<"job with priority: "<<currJobs.front()->getAbsoluteDeadline()<<"\n";
+void JLFP::displayQueueJobs() {
+  for (jobQueue jobqueue : priorityQueue) {
+    std::queue<Job *> currJobs = jobqueue.jobs;
+    while (!currJobs.empty()) {
+      std::cout << "job with priority: "
+                << currJobs.front()->getAbsoluteDeadline() << "\n";
       currJobs.pop();
     }
   }
 }
 
-
-
-JLFP::JLFP(){
+JLFP::JLFP() {
   cudaDeviceProp deviceProp;
   cudaGetDeviceProperties(&deviceProp, 0);
   this->SMsPerTPC = 2;
-  this->deviceTPCs = deviceProp.multiProcessorCount/SMsPerTPC;
+  this->deviceTPCs = deviceProp.multiProcessorCount / SMsPerTPC;
   this->TPCsInUse = 0;
 }
-
-
-

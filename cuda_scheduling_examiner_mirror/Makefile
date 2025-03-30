@@ -4,7 +4,7 @@ CFLAGS := -Wall -Werror -O3 -g -fPIC
 
 # Uncomment this line and set the correct path to use SM/TPC partitioning
 # library `libsmctrl`.
-LIBSMCTRL_PATH = /home/muut/Documents/github/ownCudaPrograms/cuda_scheduling_examiner_mirror/src/bachSrcFiles/libsmctrl/
+LIBSMCTRL_PATH = /home/muut/Documents/github/bachelorProefCode/cuda_scheduling_examiner_mirror/src/bachSrcFiles/libsmctrl/
 
 ifdef LIBSMCTRL_PATH
 LDFLAGS += -L$(LIBSMCTRL_PATH)
