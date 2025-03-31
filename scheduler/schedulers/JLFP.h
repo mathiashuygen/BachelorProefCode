@@ -5,6 +5,7 @@
 // on how to deal with this.
 #include "../Jobs/job.h"
 #include "../Jobs/jobObserver.h"
+#include "../common/deviceProps.h"
 #include "scheduler.h"
 #include <cinttypes>
 #include <cstdint>
@@ -26,6 +27,8 @@ private:
 
   jobQueue createNewJobQueu(Job *job);
   uint64_t getTPCMask(int amountOfTPCs);
+
+  DeviceInfo deviceProps;
 
 public:
   void onJobCompletion(Job *job) override;

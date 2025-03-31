@@ -3,6 +3,7 @@
 // on how to deal with this.
 
 #include "JLFP.h"
+#include <cstdint>
 
 JLFP::jobQueue JLFP::createNewJobQueu(Job *job) {
   std::queue<Job *> jobs;
@@ -12,19 +13,27 @@ JLFP::jobQueue JLFP::createNewJobQueu(Job *job) {
 }
 
 uint64_t JLFP::getTPCMask(int amountOfTPCs) {
-  // 15 X 4 bits, total of 60 bits, indicating which SM to activate for a job.
-  uint64_t allOnes = 0xFFFFFFFF;
-  // shift the bit mask to the left. Does this as many times as there are TPCs
-  // needed.
-  uint64_t neededTPCs = allOnes << amountOfTPCs;
-  // now that enough zeroes for the TPCs have been created, shift the bits to
-  // the left again, but instead of creating zeroes, create ones. This is needed
-  // because if there are TPCs in use, these have to be disabled for the job
-  // that is about to be launched.
-  uint64_t fullMask =
-      (neededTPCs << this->TPCsInUse) | ((1 << this->TPCsInUse) - 1);
+  std::vector<DeviceInfo::maskElement> masks = this->deviceProps.getTPCMasks();
 
-  return fullMask;
+  int amountOfFreeTPCsFound = 0;
+
+  // all ones mask.
+  uint64_t fullTPCMask = 0xFFFFFFFF;
+
+  while (amountOfFreeTPCsFound < amountOfTPCs) {
+    DeviceInfo::maskElement element = masks.back();
+    masks.pop_back();
+    if (element.free) {
+      // bitwise and to concat the zeroes of both masks. bitwise or would give
+      // you zeroes which is not desirable.
+      fullTPCMask = fullTPCMask & element.TPCMask;
+      // disable the TPC since it is now part of the mask of a job.
+      this->deviceProps.disableTPC(element.index);
+      amountOfFreeTPCsFound += 1;
+    }
+  }
+
+  return fullTPCMask;
 }
 
 void JLFP::dispatch() {
