@@ -34,15 +34,56 @@ void JLFP::dispatch() {
     // loop over the queues in a decreasing priority order.
     std::queue<Job *> currJobQueue = priorityQueue.back().jobs;
     while (!currJobQueue.empty()) {
+      Job *currJob = currJobQueue.front();
+      // case where a job needs more TPCs than there are on the device, give it
+      // 1/2 of the TPCs.
+      if (currJob->getNeededTPCs() >
+              DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() &&
+          currJob->getNeededTPCs() <
+              2 * DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
+        // pop the job because it will be executed.
+        int neededTPCs =
+            DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() / 2;
+        // if there aren't enough TPCs available, have the job wait until enough
+        // of them free up.
+        if (DeviceInfo::getTotalTPCsOnDevice() - TPCsInUse < neededTPCs) {
+          continue;
+        }
+        currJobQueue.pop();
+        this->TPCsInUse = neededTPCs;
+        currJob->setJobObserver(this);
+        setJobTPCMask(neededTPCs, currJob);
+        currJob->execute();
+        std::cout << "launched a job that needs more than all the TPCs on the "
+                     "device but less than twice that number.\n";
+      }
+      // case where the jobs needs more than twice the amount of TPCs on the
+      // device, give it all of them to make sure it finishes quickly.
+      else if (currJob->getNeededTPCs() >=
+               2 * DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
+        // assign it all the TPCs.
+        int neededTPCs = DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice();
+        // if there are TPCs in use, the job has to wait for all the TPCs to
+        // free up.
+        if (this->TPCsInUse > 0) {
+          continue;
+        }
+        currJobQueue.pop();
+        this->TPCsInUse = neededTPCs;
+        currJob->setJobObserver(this);
+        setJobTPCMask(neededTPCs, currJob);
+        currJob->execute();
+        std::cout << "launched a job that needs more than twice the amount of "
+                     "TPCs present on the GPU.\n";
+      }
       /* if there aren't enough TPCs for the job at the front of the queue to
        execute, wait for any to free up. the inner queues priority is time
        based, so the first job present in the queue gets to highest priority,
        even though all jobs in this inner queue have the same deadline
        priority.
       */
-      if (currJobQueue.front()->getNeededTPCs() + this->TPCsInUse <=
-          DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
-        Job *currJob = currJobQueue.front();
+      else if (currJobQueue.front()->getNeededTPCs() + this->TPCsInUse <=
+               DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
         currJobQueue.pop();
         this->TPCsInUse = this->TPCsInUse + currJob->getNeededTPCs();
         // set the observer. Used to notify the scheduler of the job's
@@ -62,7 +103,7 @@ void JLFP::dispatch() {
 void JLFP::onJobCompletion(Job *job) {
   this->TPCsInUse -= job->getNeededTPCs();
   job->releaseMasks();
-  std::cout << "job finished execution\n";
+  // std::cout << "job finished execution\n";
 }
 
 /*

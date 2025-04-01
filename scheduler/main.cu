@@ -10,7 +10,7 @@ int main() {
 
   std::vector<Task> tasks;
 
-  auto printJobFactory = JobFactory<PrintJob, int, int>::create(10, 10);
+  auto printJobFactory = JobFactory<PrintJob, int, int>::create(2, 10);
   auto busyJobFactory = JobFactory<BusyJob, int, int>::create(10, 10);
 
   tasks.push_back(Task(10, 10, 20, 70, std::move(printJobFactory), 1));

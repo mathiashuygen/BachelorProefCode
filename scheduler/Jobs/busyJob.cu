@@ -1,5 +1,6 @@
 #include "busyJob.h"
 #include "job.h"
+#include <cmath>
 #include <cstdint>
 
 // callback that is envoked at the end of each kernel execution.
@@ -23,7 +24,7 @@ void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream,
   cudaFree(kernelInfo->devicePtr);
   cudaFree(kernelInfo->timerDptr);
   cudaStreamDestroy(stream);
-
+  std::cout << "busy job finished\n";
   Job::notifyJobCompletion(kernelInfo->jobPtr);
 }
 
@@ -70,5 +71,14 @@ BusyJob::BusyJob(int threadsPerBlock, int threadBlocks) {
   int totalThreads = threadsPerBlock * threadBlocks;
   int neededSMs =
       totalThreads / DeviceInfo::getDeviceProps()->getMaxThreadsPerSM();
-  this->neededTPCs = neededSMs / DeviceInfo::getDeviceProps()->getSMsPerTPC();
+
+  // if the job needs les than one SM, assign it only one TPC. Included this if
+  // statement because the devision did go to zero if the amount of threads is
+  // too small.
+  if (neededSMs < 1) {
+    this->neededTPCs = 1;
+    return;
+  }
+  this->neededTPCs =
+      int(ceil(neededSMs / DeviceInfo::getDeviceProps()->getSMsPerTPC()));
 }
