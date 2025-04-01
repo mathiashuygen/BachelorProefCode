@@ -31,7 +31,7 @@ private:
 public:
   virtual void execute() override;
 
-  PrintJob(int minimumTPCs, int maximumTPCs);
+  PrintJob(int threadsPerBlock, int threadBlocks);
 };
 
 #endif

@@ -1,4 +1,5 @@
 
+#include "job.h"
 #include "printJob.h"
 
 // callback that is envoked at the end of each kernel execution.
@@ -51,7 +52,13 @@ void PrintJob::execute() {
   return;
 }
 
-PrintJob::PrintJob(int minimumTPCs, int maximumTPCs) {
-  this->minimumTPCs = minimumTPCs;
-  this->maximumTPCs = maximumTPCs;
+PrintJob::PrintJob(int threadsPerBlock, int threadBlocks) {
+  this->threadsPerBlock = threadsPerBlock;
+  this->threadBlocks = threadBlocks;
+
+  int totalThreads = threadsPerBlock * threadBlocks;
+  int neededSMs =
+      totalThreads / DeviceInfo::getDeviceProps()->getMaxThreadsPerSM();
+
+  this->neededTPCs = neededSMs / DeviceInfo::getDeviceProps()->getSMsPerTPC();
 }

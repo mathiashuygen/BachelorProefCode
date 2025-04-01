@@ -1,7 +1,4 @@
 #include "job.h"
-#include "jobObserver.h"
-#include <cstdint>
-#include <sys/types.h>
 
 void Job::setMaximumExecutionTime(float time) { this->releaseTime = time; }
 
@@ -15,9 +12,7 @@ float Job::getMaximumExecutionTime() { return this->maximalExecutionTime; }
 
 float Job::getReleaseTime() { return this->releaseTime; }
 
-int Job::getMaximumTpcs() { return this->maximumTPCs; }
-
-int Job::getMinimumTPCs() { return this->minimumTPCs; }
+int Job::getNeededTPCs() { return this->neededTPCs; }
 
 void Job::setThreadsPerBlock(int threads) { this->threadsPerBlock = threads; }
 

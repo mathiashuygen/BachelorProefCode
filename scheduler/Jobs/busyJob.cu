@@ -63,7 +63,12 @@ void BusyJob::execute() {
                         sizeof(float), 1);
 }
 
-BusyJob::BusyJob(int minimumTPCs, int maximumTPCs) {
-  this->maximumTPCs = maximumTPCs;
-  this->minimumTPCs = minimumTPCs;
+BusyJob::BusyJob(int threadsPerBlock, int threadBlocks) {
+  this->threadsPerBlock = threadsPerBlock;
+  this->threadBlocks = threadBlocks;
+
+  int totalThreads = threadsPerBlock * threadBlocks;
+  int neededSMs =
+      totalThreads / DeviceInfo::getDeviceProps()->getMaxThreadsPerSM();
+  this->neededTPCs = neededSMs / DeviceInfo::getDeviceProps()->getSMsPerTPC();
 }

@@ -26,7 +26,7 @@ private:
 protected:
   // On NVIDIA GPUs, the amount of TPCs allocated to a single kernel can be set.
   // These are the equivalent of the CPU cores allocated to a specific job.
-  int minimumTPCs, maximumTPCs;
+  int neededTPCs;
   int threadBlocks, threadsPerBlock;
   static JobObserver *observer;
 
@@ -35,6 +35,7 @@ public:
 
   // method that has to be overridden by the derrived classes.
   virtual void execute() = 0;
+
   void setReleaseTime(float time);
 
   void setMaximumExecutionTime(float time);
@@ -47,9 +48,7 @@ public:
 
   float getAbsoluteDeadline();
 
-  int getMinimumTPCs();
-
-  int getMaximumTpcs();
+  int getNeededTPCs();
 
   void setThreadsPerBlock(int threads);
 

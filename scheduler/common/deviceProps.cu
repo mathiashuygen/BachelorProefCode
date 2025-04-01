@@ -2,7 +2,14 @@
 #include <cmath>
 #include <cstdint>
 
-// single instance of this class.
+// init all the static vars for the linker, their actual value will be set
+// during the construction of the class.
+int DeviceInfo::totalSMsOnDevice = 0;
+int DeviceInfo::totalTPCsOnDevice = 0;
+int DeviceInfo::maxThreadsPerSM = 0;
+int DeviceInfo::SMsPerTPC = 0;
+
+// single instance of this class which all other classes can access.
 DeviceInfo *DeviceInfo::deviceProps = nullptr;
 
 DeviceInfo *DeviceInfo::getDeviceProps() {
@@ -42,6 +49,22 @@ void DeviceInfo::disableTPC(int index) { this->TPCMasks.at(index).disable(); }
 
 void DeviceInfo::enableTPC(int index) { this->TPCMasks.at(index).enable(); }
 
-DeviceInfo::DeviceInfo() { this->initTPCMaskVector(); }
+DeviceInfo::DeviceInfo() {
+  this->initTPCMaskVector();
+  cudaDeviceProp deviceProp;
+  cudaGetDeviceProperties(&deviceProp, 0);
+  totalSMsOnDevice = deviceProp.multiProcessorCount;
+  totalTPCsOnDevice = std::floor(totalSMsOnDevice / 2);
+  // nvidia forum:
+  // https://forums.developer.nvidia.com/t/why-is-max-threads-per-sm-larger-than-max-threads-per-block/277817/3
+  maxThreadsPerSM = 2048;
+  // more modern NVIDIA GPUs contain 2 SMs per TPC.
+  SMsPerTPC = 2;
+}
 
-void DeviceInfo::deleteDevicePropsInstance() { delete (this->deviceProps); }
+int DeviceInfo::getTotalSMsOnDevice() { return totalSMsOnDevice; }
+int DeviceInfo::getTotalTPCsOnDevice() { return totalTPCsOnDevice; }
+int DeviceInfo::getMaxThreadsPerSM() { return maxThreadsPerSM; }
+int DeviceInfo::getSMsPerTPC() { return SMsPerTPC; }
+
+void DeviceInfo::deleteDevicePropsInstance() { delete (deviceProps); }

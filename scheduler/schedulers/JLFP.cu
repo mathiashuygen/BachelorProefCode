@@ -3,7 +3,6 @@
 // on how to deal with this.
 
 #include "JLFP.h"
-#include <cstdint>
 
 JLFP::jobQueue JLFP::createNewJobQueu(Job *job) {
   std::queue<Job *> jobs;
@@ -35,20 +34,23 @@ void JLFP::dispatch() {
     // loop over the queues in a decreasing priority order.
     std::queue<Job *> currJobQueue = priorityQueue.back().jobs;
     while (!currJobQueue.empty()) {
-      // if there are no remaining TPCs, wait for any to free up, also check if
-      // there are enough available TPCs left to execute the job's kernel.
-      if (currJobQueue.front()->getMaximumTpcs() + this->TPCsInUse <=
-          this->deviceTPCs) {
+      /* if there aren't enough TPCs for the job at the front of the queue to
+       execute, wait for any to free up. the inner queues priority is time
+       based, so the first job present in the queue gets to highest priority,
+       even though all jobs in this inner queue have the same deadline
+       priority.
+      */
+      if (currJobQueue.front()->getNeededTPCs() + this->TPCsInUse <=
+          DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
         Job *currJob = currJobQueue.front();
         currJobQueue.pop();
-        this->TPCsInUse = this->TPCsInUse + currJob->getMaximumTpcs();
+        this->TPCsInUse = this->TPCsInUse + currJob->getNeededTPCs();
         // set the observer. Used to notify the scheduler of the job's
         // completion. When a job is finished with executing its kernel, the job
         // notifies to scheduler which will perform a clean-up.
-
         currJob->setJobObserver(this);
 
-        setJobTPCMask(currJob->getMaximumTpcs(), currJob);
+        setJobTPCMask(currJob->getNeededTPCs(), currJob);
         currJob->execute();
         std::cout << "launched a job\n";
       }
@@ -58,7 +60,7 @@ void JLFP::dispatch() {
 }
 
 void JLFP::onJobCompletion(Job *job) {
-  this->TPCsInUse -= job->getMaximumTpcs();
+  this->TPCsInUse -= job->getNeededTPCs();
   job->releaseMasks();
   std::cout << "job finished execution\n";
 }
@@ -144,10 +146,4 @@ void JLFP::displayQueueJobs() {
   }
 }
 
-JLFP::JLFP() {
-  cudaDeviceProp deviceProp;
-  cudaGetDeviceProperties(&deviceProp, 0);
-  this->SMsPerTPC = 2;
-  this->deviceTPCs = deviceProp.multiProcessorCount / SMsPerTPC;
-  this->TPCsInUse = 0;
-}
+JLFP::JLFP() { this->TPCsInUse = 0; }

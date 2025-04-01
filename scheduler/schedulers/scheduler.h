@@ -5,7 +5,7 @@
 class BaseScheduler {
 
 protected:
-  int deviceTPCs, SMsPerTPC, TPCsInUse;
+  int TPCsInUse;
 
 public:
   virtual void dispatch() = 0;
