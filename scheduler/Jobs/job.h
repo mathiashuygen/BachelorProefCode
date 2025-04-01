@@ -6,8 +6,10 @@
 #define JOB_H
 
 #include "../../commonLib/libsmctrl/libsmctrl.h"
+#include "../common/deviceProps.h"
 #include "jobObserver.h"
 #include <any>
+#include <cstdint>
 #include <memory>
 #include <sys/types.h>
 #include <tuple>
@@ -19,6 +21,7 @@ class Job {
 
 private:
   float releaseTime, maximalExecutionTime, absoluteDeadline;
+  std::vector<MaskElement> TPCMasks;
 
 protected:
   // On NVIDIA GPUs, the amount of TPCs allocated to a single kernel can be set.
@@ -26,7 +29,6 @@ protected:
   int minimumTPCs, maximumTPCs;
   int threadBlocks, threadsPerBlock;
   static JobObserver *observer;
-  u_int64_t TPCMask;
 
 public:
   // run time information of a job. Gets defined when a task releases a job.
@@ -62,7 +64,11 @@ public:
   // has to be static to be called from the callback function.
   static void notifyJobCompletion(Job *job);
 
-  void setTPCMask(u_int64_t mask);
+  void addMask(MaskElement element);
+
+  uint64_t combineMasks();
+
+  void releaseMasks();
 };
 
 #endif // JOB_H

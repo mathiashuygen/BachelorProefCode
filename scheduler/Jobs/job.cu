@@ -1,5 +1,7 @@
 #include "job.h"
 #include "jobObserver.h"
+#include <cstdint>
+#include <sys/types.h>
 
 void Job::setMaximumExecutionTime(float time) { this->releaseTime = time; }
 
@@ -37,4 +39,27 @@ void Job::notifyJobCompletion(Job *job) {
   }
 }
 
-void Job::setTPCMask(u_int64_t mask) { this->TPCMask = mask; }
+void Job::addMask(MaskElement element) { this->TPCMasks.push_back(element); }
+
+uint64_t Job::combineMasks() {
+  std::vector<MaskElement> masks = this->TPCMasks;
+
+  // base mask that will be changed to a combination of all the TPC masks.
+  uint64_t fullMask = 0xFFFFFFFF;
+  while (!masks.empty()) {
+    uint64_t singleMask = masks.back().getMask();
+    masks.pop_back();
+    fullMask = fullMask & singleMask;
+  }
+  return fullMask;
+}
+
+// after the job has completed it should release the TPCs it was using. This is
+// done by freeing all the mask elements it used.
+void Job::releaseMasks() {
+  while (!this->TPCMasks.empty()) {
+    MaskElement element = this->TPCMasks.back();
+    this->TPCMasks.pop_back();
+    DeviceInfo::getDeviceProps()->enableTPC(element.getIndex());
+  }
+}

@@ -2,6 +2,17 @@
 #include <cmath>
 #include <cstdint>
 
+// single instance of this class.
+DeviceInfo *DeviceInfo::deviceProps = nullptr;
+
+DeviceInfo *DeviceInfo::getDeviceProps() {
+  if (deviceProps == nullptr) {
+    // heap allocation.
+    deviceProps = new DeviceInfo();
+  }
+  return deviceProps;
+}
+
 void DeviceInfo::initTPCMaskVector() {
   cudaDeviceProp deviceProp;
   cudaGetDeviceProperties(&deviceProp, 0);
@@ -19,20 +30,18 @@ void DeviceInfo::initTPCMaskVector() {
     // be a one.
     uint64_t fullMask = (intermediateMAsk << i) | ((1 << i) - 1);
     // construct a new element for the vector.
-    maskElement element(true, fullMask, i);
+    MaskElement element(i, true, fullMask);
     // push the new element to the back.
     TPCMasks.push_back(element);
   }
 }
 
-std::vector<DeviceInfo::maskElement> DeviceInfo::getTPCMasks() {
-  return this->TPCMasks;
-}
+std::vector<MaskElement> DeviceInfo::getTPCMasks() { return this->TPCMasks; }
 
-void DeviceInfo::disableTPC(int index) {
-  this->TPCMasks.at(index).free = false;
-}
+void DeviceInfo::disableTPC(int index) { this->TPCMasks.at(index).disable(); }
 
-void DeviceInfo::enableTPC(int index) { this->TPCMasks.at(index).free = true; }
+void DeviceInfo::enableTPC(int index) { this->TPCMasks.at(index).enable(); }
 
 DeviceInfo::DeviceInfo() { this->initTPCMaskVector(); }
+
+void DeviceInfo::deleteDevicePropsInstance() { delete (this->deviceProps); }

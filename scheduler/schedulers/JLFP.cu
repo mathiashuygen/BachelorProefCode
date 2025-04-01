@@ -12,28 +12,22 @@ JLFP::jobQueue JLFP::createNewJobQueu(Job *job) {
   return jobqueue;
 }
 
-uint64_t JLFP::getTPCMask(int amountOfTPCs) {
-  std::vector<DeviceInfo::maskElement> masks = this->deviceProps.getTPCMasks();
+void JLFP::setJobTPCMask(int amountOfTPCs, Job *job) {
+  std::vector<MaskElement> masks = DeviceInfo::getDeviceProps()->getTPCMasks();
 
   int amountOfFreeTPCsFound = 0;
 
-  // all ones mask.
-  uint64_t fullTPCMask = 0xFFFFFFFF;
-
   while (amountOfFreeTPCsFound < amountOfTPCs) {
-    DeviceInfo::maskElement element = masks.back();
+    MaskElement element = masks.back();
     masks.pop_back();
-    if (element.free) {
-      // bitwise and to concat the zeroes of both masks. bitwise or would give
-      // you zeroes which is not desirable.
-      fullTPCMask = fullTPCMask & element.TPCMask;
+    if (element.isFree()) {
+      // add the mask element to the job's vector of mask elements.
+      job->addMask(element);
       // disable the TPC since it is now part of the mask of a job.
-      this->deviceProps.disableTPC(element.index);
+      DeviceInfo::getDeviceProps()->disableTPC(element.getIndex());
       amountOfFreeTPCsFound += 1;
     }
   }
-
-  return fullTPCMask;
 }
 
 void JLFP::dispatch() {
@@ -54,8 +48,7 @@ void JLFP::dispatch() {
 
         currJob->setJobObserver(this);
 
-        u_int64_t jobMask = getTPCMask(currJob->getMaximumTpcs());
-        currJob->setTPCMask(jobMask);
+        setJobTPCMask(currJob->getMaximumTpcs(), currJob);
         currJob->execute();
         std::cout << "launched a job\n";
       }
@@ -66,6 +59,7 @@ void JLFP::dispatch() {
 
 void JLFP::onJobCompletion(Job *job) {
   this->TPCsInUse -= job->getMaximumTpcs();
+  job->releaseMasks();
   std::cout << "job finished execution\n";
 }
 

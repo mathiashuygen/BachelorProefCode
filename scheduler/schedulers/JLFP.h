@@ -5,7 +5,6 @@
 // on how to deal with this.
 #include "../Jobs/job.h"
 #include "../Jobs/jobObserver.h"
-#include "../common/deviceProps.h"
 #include "scheduler.h"
 #include <cinttypes>
 #include <cstdint>
@@ -26,9 +25,7 @@ private:
   std::vector<jobQueue> priorityQueue;
 
   jobQueue createNewJobQueu(Job *job);
-  uint64_t getTPCMask(int amountOfTPCs);
-
-  DeviceInfo deviceProps;
+  void setJobTPCMask(int amountOfTPCs, Job *job);
 
 public:
   void onJobCompletion(Job *job) override;

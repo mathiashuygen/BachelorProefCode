@@ -1,5 +1,6 @@
 #include "busyJob.h"
 #include "job.h"
+#include <cstdint>
 
 // callback that is envoked at the end of each kernel execution.
 void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream,
@@ -52,7 +53,8 @@ void BusyJob::execute() {
   cudaStream_t kernel_stream;
   cudaStreamCreate(&kernel_stream);
   // set the stream's mask using libsmctrl.
-  libsmctrl_set_stream_mask(kernel_stream, this->TPCMask);
+  uint64_t mask = this->combineMasks();
+  libsmctrl_set_stream_mask(kernel_stream, mask);
 
   float *h_output = (float *)std::malloc(sizeof(float));
 
