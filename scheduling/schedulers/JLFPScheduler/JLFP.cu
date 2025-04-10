@@ -175,5 +175,3 @@ void JLFP::displayQueueJobs() {
     }
   }
 }
-
-JLFP::JLFP() { this->TPCsInUse = 0; }

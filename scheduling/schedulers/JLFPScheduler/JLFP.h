@@ -30,7 +30,6 @@ public:
   void addJob(Job *job) override;
   void displayQueuePriorities();
   void displayQueueJobs();
-  JLFP();
 };
 
 #endif
