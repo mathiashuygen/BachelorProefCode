@@ -85,6 +85,7 @@ void JLFP::dispatch() {
 }
 
 void JLFP::onJobCompletion(Job *job, float jobCompletionTime) {
+
   this->TPCsInUse -= job->getNeededTPCs();
   job->releaseMasks();
   if (job->getReleaseTime() + job->getAbsoluteDeadline() < jobCompletionTime) {

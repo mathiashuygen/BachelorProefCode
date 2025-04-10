@@ -1,6 +1,7 @@
 #include "maskElement.h"
 #include <cmath>
 #include <cstdint>
+#include <iostream>
 #include <sys/types.h>
 #include <vector>
 class DeviceInfo {

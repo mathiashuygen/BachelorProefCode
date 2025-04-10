@@ -27,19 +27,22 @@ void DeviceInfo::initTPCMaskVector() {
   int TPCsOnDevice = std::floor(SMsOnDevice / 2);
 
   for (int i = 0; i < TPCsOnDevice; i++) {
-    uint64_t baseMask = 0xFFFFFFFF;
-    // intermediate mask is a mask that reserves one TPC, based on the TPC
-    // index, the mask has to be shifted to the left. However, the added bits
-    // can not be zeroes because a zero indicates an enabled TPC, only one bit
-    // in the whole mask may be disabled.
-    uint64_t intermediateMAsk = baseMask << 1;
-    // now get the disbaled bit at the right index and force every added bit to
-    // be a one.
-    uint64_t fullMask = (intermediateMAsk << i) | ((1 << i) - 1);
-    // construct a new element for the vector.
-    MaskElement element(i, true, fullMask);
+    //  based on the TPC index, the mask has to be shifted i times to the left.
+    //  However, the added bits can not be zeroes because a zero indicates an
+    //  enabled TPC, only one bit in the whole mask may be disabled
+
+    uint64_t mask = ~0ULL;
+
+    // Clear the bit at the specified index
+    mask &= ~(1ULL << i);
+
+    MaskElement element(i, true, mask);
     // push the new element to the back.
     TPCMasks.push_back(element);
+  }
+  for (MaskElement element : TPCMasks) {
+    std::cout << "mask for TPC " << element.getIndex() << " = "
+              << element.getMask() << "\n";
   }
 }
 

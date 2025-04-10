@@ -10,6 +10,7 @@
 #ifndef JOB_OBSERVER_H
 #define JOB_OBSERVER_H
 
+// forward declaration to have access to the job type.
 class Job;
 
 class JobObserver {

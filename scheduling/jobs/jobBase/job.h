@@ -16,6 +16,7 @@
 #include <tuple>
 #include <utility>
 
+// forward declaration to have access to the jobObserver type.
 class JobObserver;
 
 class Job {
