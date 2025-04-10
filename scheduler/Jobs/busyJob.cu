@@ -1,5 +1,4 @@
 #include "busyJob.h"
-#include "job.h"
 #include <cmath>
 #include <cstdint>
 
@@ -25,7 +24,9 @@ void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream,
   cudaFree(kernelInfo->timerDptr);
   cudaStreamDestroy(stream);
   std::cout << "busy job finished\n";
-  Job::notifyJobCompletion(kernelInfo->jobPtr);
+  float currentTime = getCurrentTime();
+
+  Job::notifyJobCompletion(kernelInfo->jobPtr, currentTime);
 }
 
 // callback constructor.

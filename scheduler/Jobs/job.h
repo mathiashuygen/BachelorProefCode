@@ -7,6 +7,7 @@
 
 #include "../../commonLib/libsmctrl/libsmctrl.h"
 #include "../common/deviceProps.h"
+#include "../common/helpFunctions.h"
 #include "jobObserver.h"
 #include <any>
 #include <cstdint>
@@ -61,7 +62,7 @@ public:
   void setJobObserver(JobObserver *obs);
 
   // has to be static to be called from the callback function.
-  static void notifyJobCompletion(Job *job);
+  static void notifyJobCompletion(Job *job, float jobCompletionTime);
 
   void addMask(MaskElement element);
 

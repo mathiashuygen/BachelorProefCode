@@ -4,7 +4,7 @@
 
 #include "JLFP.h"
 
-JLFP::jobQueue JLFP::createNewJobQueu(Job *job) {
+JLFP::jobQueue JLFP::createNewJobQueue(Job *job) {
   std::queue<Job *> jobs;
   jobs.push(job);
   jobQueue jobqueue(job->getAbsoluteDeadline(), jobs);
@@ -23,7 +23,6 @@ void JLFP::dispatch() {
               DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() &&
           currJob->getNeededTPCs() <
               2 * DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
-        // pop the job because it will be executed.
         int neededTPCs =
             DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() / 2;
         // if there aren't enough TPCs available, have the job wait until enough
@@ -38,7 +37,6 @@ void JLFP::dispatch() {
         currJob->execute();
         std::cout << "launched a job that needs more than all the TPCs on the "
                      "device but less than twice that number.\n";
-        return;
       }
       // case where the jobs needs more than twice the amount of TPCs on the
       // device, give it all of them to make sure it finishes quickly.
@@ -83,9 +81,14 @@ void JLFP::dispatch() {
   }
 }
 
-void JLFP::onJobCompletion(Job *job) {
+void JLFP::onJobCompletion(Job *job, float jobCompletionTime) {
   this->TPCsInUse -= job->getNeededTPCs();
   job->releaseMasks();
+  if (job->getReleaseTime() + job->getAbsoluteDeadline() < jobCompletionTime) {
+    std::cout << "job finished on time\n";
+  } else {
+    std::cout << "job missed its deadline\n";
+  }
   // std::cout << "job finished execution\n";
 }
 
@@ -111,7 +114,7 @@ void JLFP::onJobCompletion(Job *job) {
  * */
 void JLFP::addJob(Job *job) {
   if (priorityQueue.empty()) {
-    jobQueue jobqueue = createNewJobQueu(job);
+    jobQueue jobqueue = createNewJobQueue(job);
     priorityQueue.push_back(jobqueue);
     // std::cout<<"queue was empty, thus added to the front with level:
     // "<<job->getAbsoluteDeadline()<<"\n";
@@ -129,13 +132,13 @@ void JLFP::addJob(Job *job) {
       return;
     } else if (i == 0 &&
                jobAbsoluteDeadline > priorityQueue.begin()->priorityLevel) {
-      jobQueue jobqueue = createNewJobQueu(job);
+      jobQueue jobqueue = createNewJobQueue(job);
       priorityQueue.insert(priorityQueue.begin(), jobqueue);
       // std::cout<<"job with new lowest priority added at level:
       // "<<jobAbsoluteDeadline<<"\n";
       return;
     } else if (i == priorityQueue.size() - 1) {
-      jobQueue jobqueue = createNewJobQueu(job);
+      jobQueue jobqueue = createNewJobQueue(job);
       priorityQueue.push_back(jobqueue);
       // std::cout<<"found new highest priority, added to the end with level:
       // "<< jobAbsoluteDeadline <<"\n";
@@ -143,7 +146,7 @@ void JLFP::addJob(Job *job) {
     } else if (i != 0 &&
                jobAbsoluteDeadline < priorityQueue.at(i - 1).priorityLevel &&
                jobAbsoluteDeadline > priorityQueue.at(i).priorityLevel) {
-      jobQueue jobqueue = createNewJobQueu(job);
+      jobQueue jobqueue = createNewJobQueue(job);
       priorityQueue.insert(priorityQueue.begin() + i, jobqueue);
       // std::cout<<"found new priority in the middle of the queues at level:
       // "<<jobAbsoluteDeadline<<"\n";

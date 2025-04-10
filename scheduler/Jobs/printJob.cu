@@ -23,8 +23,10 @@ void CUDART_CB PrintJob::printKernelCallback(cudaStream_t stream,
   cudaFree(kernelInfo->devicePtr);
   cudaStreamDestroy(stream);
   std::cout << "print job finished\n";
+
+  float currentTime = getCurrentTime();
   // notify the scheduler the job is done executing.
-  Job::notifyJobCompletion(kernelInfo->jobPtr);
+  Job::notifyJobCompletion(kernelInfo->jobPtr, currentTime);
 }
 
 // callback constructor.

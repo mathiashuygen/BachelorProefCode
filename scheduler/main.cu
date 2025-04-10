@@ -26,11 +26,11 @@ int main() {
 
     for (Task &task : tasks) {
       if (task.isJobReady()) {
-        scheduler2.addJob(task.releaseJob());
+        scheduler1.addJob(task.releaseJob());
       }
     }
     // scheduler1.displayQueueJobs();
-    scheduler2.dispatch();
+    scheduler1.dispatch();
     sleep(2000);
   }
 

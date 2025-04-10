@@ -29,4 +29,6 @@ void FCFSPartitioning::dispatch() {
 
 void FCFSPartitioning::addJob(Job *job) { this->jobQueue.push(job); }
 
-void FCFSPartitioning::onJobCompletion(Job *job) { job->releaseMasks(); }
+void FCFSPartitioning::onJobCompletion(Job *job, float jobCompletionTime) {
+  job->releaseMasks();
+}

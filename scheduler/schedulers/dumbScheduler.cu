@@ -12,4 +12,6 @@ void DumbScheduler::dispatch() {
 
 void DumbScheduler::addJob(Job *job) { this->jobQueue.push(job); }
 
-void DumbScheduler::onJobCompletion(Job *job) { return; }
+void DumbScheduler::onJobCompletion(Job *job, float jobCompletionTime) {
+  return;
+}

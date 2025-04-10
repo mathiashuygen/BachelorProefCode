@@ -28,9 +28,9 @@ JobObserver *Job::observer = nullptr;
 
 void Job::setJobObserver(JobObserver *jobObserver) { observer = jobObserver; }
 
-void Job::notifyJobCompletion(Job *job) {
+void Job::notifyJobCompletion(Job *job, float jobCompletionTime) {
   if (observer) {
-    observer->onJobCompletion(job);
+    observer->onJobCompletion(job, jobCompletionTime);
   }
 }
 

@@ -24,10 +24,10 @@ private:
 
   std::vector<jobQueue> priorityQueue;
 
-  jobQueue createNewJobQueu(Job *job);
+  jobQueue createNewJobQueue(Job *job);
 
 public:
-  void onJobCompletion(Job *job) override;
+  void onJobCompletion(Job *job, float jobCompletionTime) override;
   void dispatch() override;
   void addJob(Job *job) override;
   void displayQueuePriorities();

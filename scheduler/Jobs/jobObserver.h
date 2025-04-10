@@ -14,7 +14,7 @@ class Job;
 
 class JobObserver {
 public:
-  virtual void onJobCompletion(Job *job) = 0;
+  virtual void onJobCompletion(Job *job, float jobCompletionTime) = 0;
   virtual ~JobObserver() = default;
 };
 

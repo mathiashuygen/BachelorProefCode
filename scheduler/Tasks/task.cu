@@ -25,12 +25,14 @@ Job *Task::releaseJob() {
   std::mt19937 gen(rd());
   std::uniform_real_distribution<float> realDist(1.0, this->rel_deadline);
 
+  // get a random absolute deadline for the job.
   float absoluteDeadline = realDist(gen);
   // create a new job using the factory.
   this->job = this->jobFactory->createJob();
 
   float currentTime = getCurrentTime();
-  this->job->setAbsoluteDeadline(currentTime + this->rel_deadline);
+  // set the job's absolute deadline.
+  this->job->setAbsoluteDeadline(currentTime + absoluteDeadline);
   // reset the begin time. This is needed because tasks release jobs
   // periodically. The begin time is used to check if enough time has passed.
   this->beginTime = getCurrentTime();
