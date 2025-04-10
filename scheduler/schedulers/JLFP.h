@@ -25,7 +25,6 @@ private:
   std::vector<jobQueue> priorityQueue;
 
   jobQueue createNewJobQueu(Job *job);
-  void setJobTPCMask(int amountOfTPCs, Job *job);
 
 public:
   void onJobCompletion(Job *job) override;

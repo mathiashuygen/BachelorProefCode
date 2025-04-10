@@ -54,9 +54,10 @@ void BusyJob::execute() {
   cudaStream_t kernel_stream;
   cudaStreamCreate(&kernel_stream);
   // set the stream's mask using libsmctrl.
-  uint64_t mask = this->combineMasks();
-  libsmctrl_set_stream_mask(kernel_stream, mask);
-
+  if (!this->TPCMasks.empty()) {
+    uint64_t mask = this->combineMasks();
+    libsmctrl_set_stream_mask(kernel_stream, mask);
+  }
   float *h_output = (float *)std::malloc(sizeof(float));
 
   maxUtilizationKernel<<<1, 1, 0, kernel_stream>>>(d_output, d_timer, 1000);

@@ -1,5 +1,5 @@
 /*
- *  Task class that implements the abstract class.
+ *  Task class that implements the abstract Task class.
  * */
 
 #include "task.h"
@@ -29,8 +29,10 @@ Job *Task::releaseJob() {
   // create a new job using the factory.
   this->job = this->jobFactory->createJob();
 
-  this->job->setAbsoluteDeadline(1.0);
-  // reset the begin time;
+  float currentTime = getCurrentTime();
+  this->job->setAbsoluteDeadline(currentTime + this->rel_deadline);
+  // reset the begin time. This is needed because tasks release jobs
+  // periodically. The begin time is used to check if enough time has passed.
   this->beginTime = getCurrentTime();
 
   return this->job.get();

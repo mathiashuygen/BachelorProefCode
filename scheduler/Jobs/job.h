@@ -21,7 +21,6 @@ class Job {
 
 private:
   float releaseTime, maximalExecutionTime, absoluteDeadline;
-  std::vector<MaskElement> TPCMasks;
 
 protected:
   // On NVIDIA GPUs, the amount of TPCs allocated to a single kernel can be set.
@@ -29,6 +28,7 @@ protected:
   int neededTPCs;
   int threadBlocks, threadsPerBlock;
   static JobObserver *observer;
+  std::vector<MaskElement> TPCMasks;
 
 public:
   // run time information of a job. Gets defined when a task releases a job.

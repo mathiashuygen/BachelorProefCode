@@ -11,6 +11,7 @@ public:
   virtual void dispatch() = 0;
   virtual void addJob(Job *job) = 0;
   virtual ~BaseScheduler() = default;
+  void setJobTPCMask(int amountOfTPCs, Job *job);
 };
 
 #endif

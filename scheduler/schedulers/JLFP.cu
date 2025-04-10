@@ -11,24 +11,6 @@ JLFP::jobQueue JLFP::createNewJobQueu(Job *job) {
   return jobqueue;
 }
 
-void JLFP::setJobTPCMask(int amountOfTPCs, Job *job) {
-  std::vector<MaskElement> masks = DeviceInfo::getDeviceProps()->getTPCMasks();
-
-  int amountOfFreeTPCsFound = 0;
-
-  while (amountOfFreeTPCsFound < amountOfTPCs) {
-    MaskElement element = masks.back();
-    masks.pop_back();
-    if (element.isFree()) {
-      // add the mask element to the job's vector of mask elements.
-      job->addMask(element);
-      // disable the TPC since it is now part of the mask of a job.
-      DeviceInfo::getDeviceProps()->disableTPC(element.getIndex());
-      amountOfFreeTPCsFound += 1;
-    }
-  }
-}
-
 void JLFP::dispatch() {
   while (!priorityQueue.empty()) {
     // loop over the queues in a decreasing priority order.
@@ -56,6 +38,7 @@ void JLFP::dispatch() {
         currJob->execute();
         std::cout << "launched a job that needs more than all the TPCs on the "
                      "device but less than twice that number.\n";
+        return;
       }
       // case where the jobs needs more than twice the amount of TPCs on the
       // device, give it all of them to make sure it finishes quickly.
