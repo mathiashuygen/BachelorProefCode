@@ -1,11 +1,11 @@
-#include "Jobs/busyJob/busyJob.h"
-#include "Jobs/jobFactory/jobFactory.h"
-#include "Jobs/printJob/printJob.h"
-#include "Tasks/task.h"
 #include "common/helpFunctions.h"
+#include "jobs/busyJob/busyJob.h"
+#include "jobs/jobFactory/jobFactory.h"
+#include "jobs/printJob/printJob.h"
 #include "schedulers/FCFSScheduler/FCFSScheduler.h"
 #include "schedulers/JLFPScheduler/JLFP.h"
 #include "schedulers/dumbScheduler/dumbScheduler.h"
+#include "tasks/task.h"
 #include <memory>
 
 int main() {

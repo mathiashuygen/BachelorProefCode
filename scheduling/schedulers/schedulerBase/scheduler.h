@@ -1,7 +1,7 @@
 
 #ifndef BASE_SCHEDULER_H
 #define BASE_SCHEDULER_H
-#include "../../Jobs/jobBase/job.h"
+#include "../../jobs/jobBase/job.h"
 class BaseScheduler {
 
 protected:

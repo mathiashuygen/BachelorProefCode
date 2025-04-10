@@ -7,9 +7,9 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include "../Jobs/jobBase/job.h"
-#include "../Jobs/jobFactory/jobFactory.h"
 #include "../common/helpFunctions.h"
+#include "../jobs/jobBase/job.h"
+#include "../jobs/jobFactory/jobFactory.h"
 #include <memory>
 #include <random>
 
