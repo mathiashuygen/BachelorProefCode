@@ -20,6 +20,9 @@ bool Task::isJobReady() {
 }
 
 Job *Task::releaseJob() {
+  if (!firstJobReleased) {
+    firstJobReleased = true;
+  }
   // get a random absolute deadline.
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -33,9 +36,10 @@ Job *Task::releaseJob() {
   float currentTime = getCurrentTime();
   // set the job's absolute deadline.
   this->job->setAbsoluteDeadline(currentTime + absoluteDeadline);
-  // reset the begin time. This is needed because tasks release jobs
-  // periodically. The begin time is used to check if enough time has passed.
-  this->beginTime = getCurrentTime();
+  // set the most recent job releae time. This is needed because tasks release
+  // jobs periodically. The previous job's release time is used to check if
+  // enough time has passed for a new job to be ready.
+  this->previousJobRelease = currentTime;
 
   return this->job.get();
 }

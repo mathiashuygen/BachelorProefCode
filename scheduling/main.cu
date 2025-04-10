@@ -12,11 +12,13 @@ int main() {
 
   std::vector<Task> tasks;
 
-  auto printJobFactory = JobFactory<PrintJob, int, int>::create(200, 1024);
-  auto busyJobFactory = JobFactory<BusyJob, int, int>::create(10, 10);
+  std::unique_ptr<JobFactoryBase> printJobFactory =
+      JobFactory<PrintJob, int, int>::create(200, 1024);
+  std::unique_ptr<JobFactoryBase> busyJobFactory =
+      JobFactory<BusyJob, int, int>::create(10, 10);
 
-  tasks.push_back(Task(10, 10, 20, 70, std::move(printJobFactory), 1));
-  tasks.push_back(Task(10, 10, 60, 100, std::move(busyJobFactory), 2));
+  tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory), 1));
+  tasks.push_back(Task(10, 10, 60, 5, std::move(busyJobFactory), 2));
 
   JLFP scheduler1;
   DumbScheduler scheduler2;

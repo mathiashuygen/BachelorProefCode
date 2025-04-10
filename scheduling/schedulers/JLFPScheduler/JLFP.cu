@@ -30,6 +30,7 @@ void JLFP::dispatch() {
         if (DeviceInfo::getTotalTPCsOnDevice() - TPCsInUse < neededTPCs) {
           continue;
         }
+        // else pop the job and launch it.
         currJobQueue.pop();
         this->TPCsInUse = neededTPCs;
         currJob->setJobObserver(this);
@@ -63,20 +64,22 @@ void JLFP::dispatch() {
        even though all jobs in this inner queue have the same deadline
        priority.
       */
-      else if (currJobQueue.front()->getNeededTPCs() + this->TPCsInUse <=
+      else if (currJob->getNeededTPCs() + this->TPCsInUse <=
                DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
         currJobQueue.pop();
-        this->TPCsInUse = this->TPCsInUse + currJob->getNeededTPCs();
+        int neededTPCs = currJob->getNeededTPCs();
+        this->TPCsInUse = this->TPCsInUse + neededTPCs;
         // set the observer. Used to notify the scheduler of the job's
         // completion. When a job is finished with executing its kernel, the job
         // notifies to scheduler which will perform a clean-up.
         currJob->setJobObserver(this);
 
-        setJobTPCMask(currJob->getNeededTPCs(), currJob);
+        setJobTPCMask(neededTPCs, currJob);
         currJob->execute();
         std::cout << "launched a job\n";
       }
     }
+    // pop the level from the queue.
     priorityQueue.pop_back();
   }
 }
@@ -98,17 +101,17 @@ void JLFP::onJobCompletion(Job *job, float jobCompletionTime) {
  *  -If the vector is empty, a new queue has to be inserted
  *   into the vector.
  *
- *  -If the job that has to be added has a higher priority than any job queues
- * so far, a new job queue has to be created and inserted at the end of the
- * vector.
+ *  -If the job that has to be added has a higher priority than any of the job
+ * queues so far, a new job queue has to be created and inserted at the end of
+ * the vector.
  *
  *  -If the job that has to be added has a lower priority that any job in the
  * queues so far, a new job queue has to be created and inserted to the
  * beginning of the vector.
  *
  *  -If the job has a priority that has never been seen before which isn't the
- * lowest of highest one, a new job queue has to created and inserted in the
- * middle of the vector between to priorities that are respectively lower and
+ * lowest or highest one, a new job queue has to created and inserted in the
+ * middle of the vector between to priorities that are lower and
  * higher than the new job's one.
  *
  * */
