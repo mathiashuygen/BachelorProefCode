@@ -1,0 +1,3 @@
+[submodule "scheduling/benchmarks"]
+	path = scheduling/benchmarks
+	url = https://github.com/open-s4c/benchkit.git
