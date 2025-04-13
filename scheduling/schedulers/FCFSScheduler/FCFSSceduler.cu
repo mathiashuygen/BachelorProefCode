@@ -11,17 +11,17 @@ void FCFSScheduler::dispatch() {
       setJobTPCMask(allowedTPCs, currJob);
       currJob->setJobObserver(this);
       currJob->execute();
-      // std::cout << "launched with 1/2 of the total TPCs\n";
+      std::cout << "launched with 1/2 of the total TPCs\n";
     } else if (neededTPCs >= 2 * totalTPCs) {
       setJobTPCMask(totalTPCs, currJob);
       currJob->setJobObserver(this);
       currJob->execute();
-      // std::cout << "launched with all TPCs\n";
+      std::cout << "launched with all TPCs\n";
     } else {
       setJobTPCMask(neededTPCs, currJob);
       currJob->setJobObserver(this);
       currJob->execute();
-      // std::cout << "launched a job with its needed TPCs\n";
+      std::cout << "launched a job with its needed TPCs\n";
     }
     this->jobQueue.pop();
   }
@@ -31,4 +31,11 @@ void FCFSScheduler::addJob(Job *job) { this->jobQueue.push(job); }
 
 void FCFSScheduler::onJobCompletion(Job *job, float jobCompletionTime) {
   job->releaseMasks();
+  // check if the job met its deadline.
+  job->releaseMasks();
+  if (!(job->getReleaseTime() + job->getAbsoluteDeadline() <
+        jobCompletionTime)) {
+    this->incDeadlineMisses();
+  }
+  this->incJobsCompleted();
 }

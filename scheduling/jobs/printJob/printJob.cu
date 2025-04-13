@@ -61,5 +61,10 @@ PrintJob::PrintJob(int threadsPerBlock, int threadBlocks) {
   int neededSMs =
       totalThreads / DeviceInfo::getDeviceProps()->getMaxThreadsPerSM();
 
-  this->neededTPCs = neededSMs / DeviceInfo::getDeviceProps()->getSMsPerTPC();
+  if (neededSMs < 1) {
+    this->neededTPCs = 1;
+    return;
+  }
+  this->neededTPCs =
+      int(ceil(neededSMs / DeviceInfo::getDeviceProps()->getSMsPerTPC()));
 }

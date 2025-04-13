@@ -13,5 +13,11 @@ void DumbScheduler::dispatch() {
 void DumbScheduler::addJob(Job *job) { this->jobQueue.push(job); }
 
 void DumbScheduler::onJobCompletion(Job *job, float jobCompletionTime) {
-  return;
+  // check if the job met its deadline.
+  job->releaseMasks();
+  if (!(job->getReleaseTime() + job->getAbsoluteDeadline() <
+        jobCompletionTime)) {
+    this->incDeadlineMisses();
+  }
+  this->incJobsCompleted();
 }

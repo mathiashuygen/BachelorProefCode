@@ -1,3 +1,6 @@
+#ifndef FCFS_SCHEDULER_H
+#define FCFS_SCHEDULER_H
+
 #include "../schedulerBase/scheduler.h"
 #include <iostream>
 #include <queue>
@@ -11,3 +14,5 @@ public:
   void dispatch() override;
   void addJob(Job *job) override;
 };
+
+#endif

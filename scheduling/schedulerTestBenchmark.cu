@@ -119,11 +119,10 @@ void runBenchmark(BaseScheduler *scheduler, int numTasks, int threadsPerBlock,
 
   // These values would normally come from the scheduler's metrics
   // You would need to implement these metrics in each scheduler class
-  jobsCompleted = 10;      // Replace with actual metric
-  jobsMissedDeadline = 10; // Replace with actual metric
-  totalExecutionTime = 10; // Replace with actual metric
+  jobsCompleted = scheduler->getJobsCompleted(); // Replace with actual metric
+  jobsMissedDeadline =
+      scheduler->getDeadlineMisses(); // Replace with actual metric
 
-  float averageLatency = 10; // Calculate from collected data
   float throughput = jobsCompleted / totalTime;
 
   // Output metrics in a format that can be parsed by the benchmarking tool
@@ -135,7 +134,6 @@ void runBenchmark(BaseScheduler *scheduler, int numTasks, int threadsPerBlock,
   std::cout << "Execution time: " << totalTime << " seconds" << std::endl;
   std::cout << "Jobs completed: " << jobsCompleted << std::endl;
   std::cout << "Jobs missed deadline: " << jobsMissedDeadline << std::endl;
-  std::cout << "Average latency: " << averageLatency << " ms" << std::endl;
   std::cout << "Throughput: " << throughput << " jobs/second" << std::endl;
 }
 

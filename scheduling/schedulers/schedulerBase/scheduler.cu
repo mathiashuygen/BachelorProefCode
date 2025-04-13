@@ -17,3 +17,11 @@ void BaseScheduler::setJobTPCMask(int amountOfTPCs, Job *job) {
     }
   }
 }
+
+int BaseScheduler::getJobsCompleted() { return this->jobsCompleted; }
+
+int BaseScheduler::getDeadlineMisses() { return this->deadlineMisses; }
+
+void BaseScheduler::incJobsCompleted() { this->jobsCompleted += 1; }
+
+void BaseScheduler::incDeadlineMisses() { this->deadlineMisses += 1; }
