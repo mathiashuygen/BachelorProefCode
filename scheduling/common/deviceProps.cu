@@ -40,10 +40,6 @@ void DeviceInfo::initTPCMaskVector() {
     // push the new element to the back.
     TPCMasks.push_back(element);
   }
-  for (MaskElement element : TPCMasks) {
-    std::cout << "mask for TPC " << element.getIndex() << " = "
-              << element.getMask() << "\n";
-  }
 }
 
 std::vector<MaskElement> DeviceInfo::getTPCMasks() { return this->TPCMasks; }

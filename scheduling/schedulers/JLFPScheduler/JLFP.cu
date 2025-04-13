@@ -36,8 +36,9 @@ void JLFP::dispatch() {
         currJob->setJobObserver(this);
         setJobTPCMask(neededTPCs, currJob);
         currJob->execute();
-        std::cout << "launched a job that needs more than all the TPCs on the "
-                     "device but less than twice that number.\n";
+        // std::cout << "launched a job that needs more than all the TPCs on the
+        // "
+        //              "device but less than twice that number.\n";
       }
       // case where the jobs needs more than twice the amount of TPCs on the
       // device, give it all of them to make sure it finishes quickly.
@@ -55,8 +56,9 @@ void JLFP::dispatch() {
         currJob->setJobObserver(this);
         setJobTPCMask(neededTPCs, currJob);
         currJob->execute();
-        std::cout << "launched a job that needs more than twice the amount of "
-                     "TPCs present on the GPU.\n";
+        // std::cout << "launched a job that needs more than twice the amount of
+        // "
+        //              "TPCs present on the GPU.\n";
       }
       /* if there aren't enough TPCs for the job at the front of the queue to
        execute, wait for any to free up. the inner queues priority is time
@@ -76,7 +78,7 @@ void JLFP::dispatch() {
 
         setJobTPCMask(neededTPCs, currJob);
         currJob->execute();
-        std::cout << "launched a job\n";
+        // std::cout << "launched a job\n";
       }
     }
     // pop the level from the queue.
@@ -89,9 +91,9 @@ void JLFP::onJobCompletion(Job *job, float jobCompletionTime) {
   this->TPCsInUse -= job->getNeededTPCs();
   job->releaseMasks();
   if (job->getReleaseTime() + job->getAbsoluteDeadline() < jobCompletionTime) {
-    std::cout << "job finished on time\n";
+    // std::cout << "job finished on time\n";
   } else {
-    std::cout << "job missed its deadline\n";
+    // std::cout << "job missed its deadline\n";
   }
   // std::cout << "job finished execution\n";
 }

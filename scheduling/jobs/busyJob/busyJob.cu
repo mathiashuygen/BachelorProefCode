@@ -23,7 +23,7 @@ void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream,
   cudaFree(kernelInfo->devicePtr);
   cudaFree(kernelInfo->timerDptr);
   cudaStreamDestroy(stream);
-  std::cout << "busy job finished\n";
+  // std::cout << "busy job finished\n";
   float currentTime = getCurrentTime();
 
   Job::notifyJobCompletion(kernelInfo->jobPtr, currentTime);

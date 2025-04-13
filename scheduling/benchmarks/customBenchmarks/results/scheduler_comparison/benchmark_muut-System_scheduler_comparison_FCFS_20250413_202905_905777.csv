@@ -1,0 +1,55 @@
+# benchmark_campaign_name: scheduler_comparison_FCFS
+# benchmark_duration_seconds: 30
+# nb_runs: 3
+# date: 2025-04-13 20:29:33.522374+00:00
+# date_val: 20250413_202933
+# git_branch: main
+# git_sha: d0910bd6d53c3107cddf637b66e9de48344578b8
+# kernel: Linux muut-System 6.11.0-21-generic #21~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon Feb 24 16:52:15 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+# kernel_boot_args: BOOT_IMAGE=/boot/vmlinuz-6.11.0-21-generic root=UUID=a3928ffb-113f-4fcc-a56b-03623427524e ro quiet splash vt.handoff=7
+# expected_duration_seconds: 90
+# expected_duration_pretty: 0:01:30
+# prebuild_duration_seconds: 0
+# prebuild_duration_pretty: 0:00:00
+experiment_name;benchmark_name;hostname;architecture;scheduler;threads_per_block;block_count;data_size;rep;raw_output;execution_time;average_latency;throughput
+scheduler_comparison_FCFS;schedulerbenchmark;muut-System;x86_64;FCFS;32;8;1024;1;Starting benchmark with FCFS scheduler
+Configuration: 32 threads per block, 8 blocks, 1024 data size
+Benchmark Results:
+Scheduler: FCFS
+Threads Per Block: 32
+Block Count: 8
+Data Size: 1024
+Execution time: 5.007 seconds
+Jobs completed: 10
+Jobs missed deadline: 10
+Average latency: 10 ms
+Throughput: 1.9972 jobs/second
+;5.007;10.0;1.9972
+scheduler_comparison_FCFS;schedulerbenchmark;muut-System;x86_64;FCFS;32;8;1024;2;Starting benchmark with FCFS scheduler
+Configuration: 32 threads per block, 8 blocks, 1024 data size
+Benchmark Results:
+Scheduler: FCFS
+Threads Per Block: 32
+Block Count: 8
+Data Size: 1024
+Execution time: 5.008 seconds
+Jobs completed: 10
+Jobs missed deadline: 10
+Average latency: 10 ms
+Throughput: 1.99681 jobs/second
+;5.008;10.0;1.99681
+scheduler_comparison_FCFS;schedulerbenchmark;muut-System;x86_64;FCFS;32;8;1024;3;Starting benchmark with FCFS scheduler
+Configuration: 32 threads per block, 8 blocks, 1024 data size
+Benchmark Results:
+Scheduler: FCFS
+Threads Per Block: 32
+Block Count: 8
+Data Size: 1024
+Execution time: 5.006 seconds
+Jobs completed: 10
+Jobs missed deadline: 10
+Average latency: 10 ms
+Throughput: 1.9976 jobs/second
+;5.006;10.0;1.9976
+# total_duration_seconds: 27.665884
+# total_duration_pretty: 0:00:27.665884

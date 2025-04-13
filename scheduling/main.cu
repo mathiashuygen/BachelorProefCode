@@ -22,7 +22,7 @@ int main() {
 
   JLFP scheduler1;
   DumbScheduler scheduler2;
-  FCFSPartitioning scheduler3;
+  FCFSScheduler scheduler3;
 
   while (true) {
 

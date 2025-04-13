@@ -6,7 +6,7 @@ void DumbScheduler::dispatch() {
     this->jobQueue.pop();
     currJob->setJobObserver(this);
     currJob->execute();
-    std::cout << "launched a job from the dumb scheduler\n";
+    // std::cout << "launched a job from the dumb scheduler\n";
   }
 }
 

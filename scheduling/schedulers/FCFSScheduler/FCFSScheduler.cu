@@ -1,6 +1,6 @@
 #include "FCFSScheduler.h"
 
-void FCFSPartitioning::dispatch() {
+void FCFSScheduler::dispatch() {
   while (!this->jobQueue.empty()) {
     Job *currJob = this->jobQueue.front();
     int totalTPCs = DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice();
@@ -11,24 +11,24 @@ void FCFSPartitioning::dispatch() {
       setJobTPCMask(allowedTPCs, currJob);
       currJob->setJobObserver(this);
       currJob->execute();
-      std::cout << "launched with 1/2 of the total TPCs\n";
+      // std::cout << "launched with 1/2 of the total TPCs\n";
     } else if (neededTPCs >= 2 * totalTPCs) {
       setJobTPCMask(totalTPCs, currJob);
       currJob->setJobObserver(this);
       currJob->execute();
-      std::cout << "launched with all TPCs\n";
+      // std::cout << "launched with all TPCs\n";
     } else {
       setJobTPCMask(neededTPCs, currJob);
       currJob->setJobObserver(this);
       currJob->execute();
-      std::cout << "launched a job with its needed TPCs\n";
+      // std::cout << "launched a job with its needed TPCs\n";
     }
     this->jobQueue.pop();
   }
 }
 
-void FCFSPartitioning::addJob(Job *job) { this->jobQueue.push(job); }
+void FCFSScheduler::addJob(Job *job) { this->jobQueue.push(job); }
 
-void FCFSPartitioning::onJobCompletion(Job *job, float jobCompletionTime) {
+void FCFSScheduler::onJobCompletion(Job *job, float jobCompletionTime) {
   job->releaseMasks();
 }

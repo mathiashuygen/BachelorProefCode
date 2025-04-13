@@ -1,0 +1,13 @@
+# benchmark_campaign_name: scheduler_comparison_JLFP
+# benchmark_duration_seconds: 30
+# nb_runs: 3
+# date: 2025-04-12 12:00:07.024026+00:00
+# date_val: 20250412_120007
+# git_branch: main
+# git_sha: d0910bd6d53c3107cddf637b66e9de48344578b8
+# kernel: Linux muut-System 6.11.0-21-generic #21~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon Feb 24 16:52:15 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+# kernel_boot_args: BOOT_IMAGE=/boot/vmlinuz-6.11.0-21-generic root=UUID=a3928ffb-113f-4fcc-a56b-03623427524e ro quiet splash vt.handoff=7
+# expected_duration_seconds: 4320
+# expected_duration_pretty: 1:12:00
+# prebuild_duration_seconds: 0
+# prebuild_duration_pretty: 0:00:00

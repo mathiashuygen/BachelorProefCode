@@ -2,7 +2,7 @@
 #include <iostream>
 #include <queue>
 
-class FCFSPartitioning : public BaseScheduler, public JobObserver {
+class FCFSScheduler : public BaseScheduler, public JobObserver {
 private:
   std::queue<Job *> jobQueue;
 
