@@ -62,7 +62,7 @@ void runBenchmark(BaseScheduler *scheduler, int numTasks, int threadsPerBlock,
       std::unique_ptr<JobFactoryBase> busyJobFactory =
           JobFactory<BusyJob, int, int>::create(threadsPerBlock, blockCount);
 
-      int period = 10;
+      int period = 5;
       int deadline = 30 * (i + 1); // Stagger deadlines
       int releaseTime = 5 * i;     // Stagger release times
 
@@ -73,7 +73,7 @@ void runBenchmark(BaseScheduler *scheduler, int numTasks, int threadsPerBlock,
       std::unique_ptr<JobFactoryBase> printJobFactory =
           JobFactory<PrintJob, int, int>::create(threadsPerBlock, blockCount);
 
-      int period = 15;
+      int period = 5;
       int deadline = 20 * (i + 1); // Stagger deadlines
       int releaseTime = 5 * i;     // Stagger release times
 
@@ -92,7 +92,7 @@ void runBenchmark(BaseScheduler *scheduler, int numTasks, int threadsPerBlock,
   auto startTime = std::chrono::high_resolution_clock::now();
 
   // Run for a fixed amount of time
-  const int benchmarkDuration = 5; // seconds
+  const int benchmarkDuration = 15; // seconds
   auto endTime = startTime + std::chrono::seconds(benchmarkDuration);
 
   while (std::chrono::high_resolution_clock::now() < endTime) {

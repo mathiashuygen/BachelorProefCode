@@ -1,0 +1,16 @@
+[
+    {
+        "experiment_name": "scheduler_comparison_JLFP",
+        "benchmark_name": "schedulerbenchmark",
+        "hostname": "muut-System",
+        "architecture": "x86_64",
+        "scheduler": "JLFP",
+        "threads_per_block": 32,
+        "block_count": 8,
+        "data_size": 1024,
+        "rep": 1,
+        "raw_output": "Starting benchmark with JLFP scheduler\nConfiguration: 32 threads per block, 8 blocks, 1024 data size\nBenchmark Results:\nScheduler: JLFP\nThreads Per Block: 32\nBlock Count: 8\nData Size: 1024\nExecution time: 5.007 seconds\nJobs completed: 0\nJobs missed deadline: 0\nThroughput: 0 jobs/second\n",
+        "execution_time": 5.007,
+        "throughput": 0.0
+    }
+]

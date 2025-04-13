@@ -1,0 +1,16 @@
+[
+    {
+        "experiment_name": "scheduler_comparison_FCFS",
+        "benchmark_name": "schedulerbenchmark",
+        "hostname": "muut-System",
+        "architecture": "x86_64",
+        "scheduler": "FCFS",
+        "threads_per_block": 32,
+        "block_count": 8,
+        "data_size": 1024,
+        "rep": 3,
+        "raw_output": "Starting benchmark with FCFS scheduler\nConfiguration: 32 threads per block, 8 blocks, 1024 data size\nBenchmark Results:\nScheduler: FCFS\nThreads Per Block: 32\nBlock Count: 8\nData Size: 1024\nExecution time: 15.003 seconds\nJobs completed: 7\nJobs missed deadline: 0\nThroughput: 0.466573 jobs/second\n",
+        "execution_time": 15.003,
+        "throughput": 0.466573
+    }
+]

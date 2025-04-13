@@ -179,17 +179,6 @@ def plot_benchmark_results(file_path=None):
     print(f"Created plot: execution_time_by_scheduler.png")
 
     plt.figure(figsize=(12, 8))
-    ax = sns.barplot(
-        data=combined_df, x="scheduler", y="average_latency", errorbar=None
-    )
-    plt.title("Average Latency by Scheduler")
-    plt.grid(True, linestyle="--", alpha=0.7)
-    plt.tight_layout()
-    plt.savefig(os.path.join(plots_dir, "latency_by_scheduler.png"))
-    plt.close()
-    print(f"Created plot: latency_by_scheduler.png")
-
-    plt.figure(figsize=(12, 8))
     ax = sns.barplot(data=combined_df, x="scheduler", y="throughput", errorbar=None)
     plt.title("Throughput by Scheduler")
     plt.grid(True, linestyle="--", alpha=0.7)
