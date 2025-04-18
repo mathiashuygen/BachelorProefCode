@@ -1,6 +1,7 @@
 #ifndef PRINT_JOB_H
 #define PRINT_JOB_H
 
+#include "../../schedulers/asyncCompletionQueue/completionQueue.h"
 #include "../jobBase/job.h"
 #include "../kernels/printKernel.h"
 #include <cuda_runtime.h>
@@ -32,6 +33,8 @@ public:
   virtual void execute() override;
 
   PrintJob(int threadsPerBlock, int threadBlocks);
+
+  std::string getMessage() override;
 };
 
 #endif

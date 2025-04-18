@@ -10,22 +10,14 @@ void CUDART_CB PrintJob::printKernelCallback(cudaStream_t stream,
   printKernelLaunchInformation *kernelInfo =
       static_cast<printKernelLaunchInformation *>(data);
 
-  // copy the result from device to host.
-  cudaMemcpy(kernelInfo->hostPtr, kernelInfo->devicePtr, kernelInfo->size,
-             cudaMemcpyDeviceToHost);
-
-  // std::cout<<"print job from task "<<kernelInfo->taskId<<" took
-  // "<<*(kernelInfo->hostPtr)<<"s\n";
-
   // free the dynamically allocated memory and the stream.
-  free(kernelInfo->hostPtr);
+  cudaFreeHost(kernelInfo->hostPtr);
   cudaFree(kernelInfo->devicePtr);
   cudaStreamDestroy(stream);
-  // std::cout << "print job finished\n";
 
-  float currentTime = getCurrentTime();
-  // notify the scheduler the job is done executing.
-  Job::notifyJobCompletion(kernelInfo->jobPtr, currentTime);
+  // push completed job to async clean up queue.
+  CompletionQueue::getCompletionQueue().push({kernelInfo->jobPtr});
+  delete (kernelInfo);
 }
 
 // callback constructor.
@@ -43,10 +35,18 @@ void PrintJob::execute() {
   cudaStream_t kernel_stream;
   cudaStreamCreate(&kernel_stream);
   float *d_output;
-  float *h_output = (float *)std::malloc(sizeof(float));
   cudaMalloc(&d_output, sizeof(float));
+  // allocate host memory using cuda. If done this way, copying from device to
+  // host can be done asynchronously.
+  // https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gb65da58f444e7230d3322b6126bb4902
+  float *h_output = nullptr;
+  size_t nbrOfBytes = sizeof(float);
+  cudaHostAlloc((void **)&h_output, nbrOfBytes, cudaHostAllocDefault);
 
-  printMessage<<<1, 1, 0, kernel_stream>>>(1, 1, 100, d_output);
+  printMessage<<<1, 1, 0, kernel_stream>>>(1, 1, 10000000, d_output);
+  cudaMemcpyAsync(h_output, d_output, nbrOfBytes, cudaMemcpyHostToDevice,
+                  kernel_stream);
+
   addPrintKernelCallback(this, kernel_stream, d_output, h_output, sizeof(float),
                          1);
 
@@ -68,3 +68,5 @@ PrintJob::PrintJob(int threadsPerBlock, int threadBlocks) {
   this->neededTPCs =
       int(ceil(neededSMs / DeviceInfo::getDeviceProps()->getSMsPerTPC()));
 }
+
+std::string PrintJob::getMessage() { return "print job finished\n"; }

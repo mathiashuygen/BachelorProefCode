@@ -63,3 +63,5 @@ void Job::releaseMasks() {
 void Job::setParentTask(Task *task) { this->parent = task; }
 
 Task *Job::getParentTask() { return this->parent; }
+
+std::string Job::getMessage() { return "standard\n"; }

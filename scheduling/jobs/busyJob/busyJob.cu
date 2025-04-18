@@ -1,7 +1,7 @@
+#include "../../schedulers/asyncCompletionQueue/completionQueue.h"
 #include "busyJob.h"
 #include <cmath>
 #include <cstdint>
-
 // callback that is envoked at the end of each kernel execution.
 void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream,
                                            cudaError_t status, void *data) {
@@ -16,10 +16,12 @@ void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream,
   cudaFree(kernelInfo->devicePtr);
   cudaFree(kernelInfo->timerDptr);
   cudaStreamDestroy(stream);
-  // std::cout << "busy job finished\n";
-  float currentTime = getCurrentTime();
 
-  Job::notifyJobCompletion(kernelInfo->jobPtr, currentTime);
+  // push the job to the clean up queue which the scheduler will handle in its
+  // own thread.
+  CompletionQueue::getCompletionQueue().push({kernelInfo->jobPtr});
+
+  delete (kernelInfo);
 }
 
 // callback constructor.
@@ -38,12 +40,10 @@ void BusyJob::execute() {
   // Allocate memory
   float *d_output;
   cudaMalloc(&d_output, sizeof(float));
-
   cudaStream_t kernel_stream;
   cudaStreamCreate(&kernel_stream);
   // set the stream's mask using libsmctrl.
   if (!this->TPCMasks.empty()) {
-    std::cout << "mask set";
     uint64_t mask = this->combineMasks();
     libsmctrl_set_stream_mask(kernel_stream, mask);
   }
@@ -53,8 +53,7 @@ void BusyJob::execute() {
   float *h_output = nullptr;
   size_t nbrOfBytes = sizeof(float);
   cudaHostAlloc((void **)&h_output, nbrOfBytes, cudaHostAllocDefault);
-
-  maxUtilizationKernel<<<1, 1, 0, kernel_stream>>>(d_output, 1000);
+  maxUtilizationKernel<<<10, 10, 0, kernel_stream>>>(d_output, 1);
   // define the asynchronous memory transfer here.
   cudaMemcpyAsync(h_output, d_output, nbrOfBytes, cudaMemcpyHostToDevice,
                   kernel_stream);
@@ -82,3 +81,5 @@ BusyJob::BusyJob(int threadsPerBlock, int threadBlocks) {
   this->neededTPCs =
       ceil(neededSMs / DeviceInfo::getDeviceProps()->getSMsPerTPC());
 }
+
+std::string BusyJob::getMessage() { return "busy job finished\n"; }

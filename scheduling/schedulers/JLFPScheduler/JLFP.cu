@@ -88,7 +88,6 @@ void JLFP::dispatch() {
 }
 
 void JLFP::onJobCompletion(Job *job, float jobCompletionTime) {
-  std::cout << "job finished\n";
   this->TPCsInUse -= job->getNeededTPCs();
   // check if the job met its deadline.
   job->releaseMasks();
@@ -178,6 +177,30 @@ void JLFP::displayQueueJobs() {
       std::cout << "job with priority: "
                 << currJobs.front()->getAbsoluteDeadline() << "\n";
       currJobs.pop();
+    }
+  }
+}
+
+JLFP::JLFP() {
+  this->running = true;
+  this->cleanUpThread = std::thread([this] { this->cleanUpLoop(); });
+}
+
+void JLFP::cleanUpLoop() {
+  while (running) {
+    CompletionEvent ev;
+    if (CompletionQueue::getCompletionQueue().pop(ev)) {
+      // Get the current time *now*, in the cleanup thread's context
+      float completionTime = getCurrentTime();
+      std::cout << ev.job->getMessage() << "\n";
+      // call job cleanUp method in this thread.
+      this->onJobCompletion(ev.job, completionTime);
+    } else {
+      // pop returned false, means queue
+      // is empty
+      if (!running) {
+        break; // Exit loop if running is false
+      }
     }
   }
 }

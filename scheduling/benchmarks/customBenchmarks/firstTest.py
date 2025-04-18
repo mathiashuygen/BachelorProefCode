@@ -12,6 +12,7 @@ from pathlib import Path
 DOCKER = True
 GUEST_SRC_DIR = "/home/user/src"
 
+
 class SchedulerBenchmark(Benchmark):
     """Benchmark object for CUDA Scheduler comparisons."""
 
@@ -70,33 +71,33 @@ class SchedulerBenchmark(Benchmark):
         self.platform.comm.makedirs(path=self._results_path, exist_ok=True)
 
         command = [
-                "nvcc",
-                "-o",
-                f"{self._results_path}/{self._scheduler_type}_benchmark",
-                f'-DSCHEDULER_TYPE=\\"{self._scheduler_type}\\"',
-                f"-DTHREADS_PER_BLOCK={threads_per_block}",
-                f"-DBLOCK_COUNT={block_count}",
-                f"-DDATA_SIZE={data_size}",
-                "../../schedulerTestBenchmark.cu",
-                "../../tasks/task.cu",
-                "../../schedulers/schedulerBase/scheduler.cu",
-                "../../schedulers/JLFPScheduler/JLFP.cu",
-                "../../schedulers/dumbScheduler/dumbScheduler.cu",
-                "../../schedulers/FCFSScheduler/FCFSScheduler.cu",
-                "../../jobs/kernels/busyKernel.cu",
-                "../../jobs/kernels/printKernel.cu",
-                "../../jobs/jobBase/job.cu",
-                "../../jobs/printJob/printJob.cu",
-                "../../jobs/busyJob/busyJob.cu",
-                "../../common/helpFunctions.cu",
-                "../../common/deviceProps.cu",
-                "../../common/maskElement.cu",
-                f"-I{self._libsmctrl_dir}",
-                "-lsmctrl",
-                "-lcuda",
-                "-lcudart",
-                f"-L{self._libsmctrl_dir}",
-            ]
+            "nvcc",
+            "-o",
+            f"{self._results_path}/{self._scheduler_type}_benchmark",
+            f'-DSCHEDULER_TYPE=\\"{self._scheduler_type}\\"',
+            f"-DTHREADS_PER_BLOCK={threads_per_block}",
+            f"-DBLOCK_COUNT={block_count}",
+            f"-DDATA_SIZE={data_size}",
+            "../../schedulerTestBenchmark.cu",
+            "../../tasks/task.cu",
+            "../../schedulers/schedulerBase/scheduler.cu",
+            "../../schedulers/JLFPScheduler/JLFP.cu",
+            "../../schedulers/dumbScheduler/dumbScheduler.cu",
+            "../../schedulers/FCFSScheduler/FCFSScheduler.cu",
+            "../../jobs/kernels/busyKernel.cu",
+            "../../jobs/kernels/printKernel.cu",
+            "../../jobs/jobBase/job.cu",
+            "../../jobs/printJob/printJob.cu",
+            "../../jobs/busyJob/busyJob.cu",
+            "../../common/helpFunctions.cu",
+            "../../common/deviceProps.cu",
+            "../../common/maskElement.cu",
+            f"-I{self._libsmctrl_dir}",
+            "-lsmctrl",
+            "-lcuda",
+            "-lcudart",
+            f"-L{self._libsmctrl_dir}",
+        ]
 
         # Compile the benchmark with the specific scheduler
         self.platform.comm.shell(
@@ -174,6 +175,7 @@ def get_docker_platform(
 
     return docker_platform
 
+
 def scheduler_campaign(
     name: str = "scheduler_comparison",
     benchmark_file: str = "../../schedulerTestBenchmark.cu",
@@ -186,7 +188,9 @@ def scheduler_campaign(
         src_dir = Path(GUEST_SRC_DIR)
     else:
         platform = get_current_platform()
-        libsmctrl_dir = "/home/muut/Documents/github/bachelorProefCode/commonLib/libsmctrl"
+        libsmctrl_dir = (
+            "/home/muut/Documents/github/bachelorProefCode/commonLib/libsmctrl"
+        )
         src_dir = gmrd
 
     # Define the schedulers to test

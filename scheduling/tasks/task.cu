@@ -41,7 +41,7 @@ Job *Task::releaseJob() {
 
   float currentTime = getCurrentTime();
   // set the job's absolute deadline.
-  job->setAbsoluteDeadline(currentTime + absoluteDeadline);
+  job->setAbsoluteDeadline(10);
   // set the most recent job releae time. This is needed because tasks release
   // jobs periodically. The previous job's release time is used to check if
   // enough time has passed for a new job to be ready.

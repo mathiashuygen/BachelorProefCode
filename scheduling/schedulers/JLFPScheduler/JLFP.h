@@ -3,13 +3,16 @@
 // JOB LEVEL FIXED PRIORITY scheduler. This means all jobs have their own unique
 // priority at launch time. Priorities can overlap, it is left to the scheduler
 // on how to deal with this.
+#include "../asyncCompletionQueue/completionQueue.h"
 #include "../schedulerBase/scheduler.h"
+#include <atomic>
 #include <cinttypes>
 #include <cstdint>
 #include <iostream>
 #include <memory>
 #include <queue>
 #include <sys/types.h>
+#include <thread>
 
 class JLFP : public BaseScheduler, public JobObserver {
 private:
@@ -24,12 +27,23 @@ private:
 
   jobQueue createNewJobQueue(Job *job);
 
+  // clean up fields and methods.
+  // the actual thread.
+  std::thread cleanUpThread;
+  // boolean that is checked to keep the loop inside the thread running.
+  std::atomic<bool> running{false};
+  // loop method that loops inside the thread to clean up all the jobs.
+  void cleanUpLoop();
+
 public:
   void onJobCompletion(Job *job, float jobCompletionTime) override;
   void dispatch() override;
   void addJob(Job *job) override;
   void displayQueuePriorities();
   void displayQueueJobs();
+
+  // added constructor to overwrite running boolean.
+  JLFP();
 };
 
 #endif

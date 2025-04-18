@@ -37,6 +37,8 @@ public:
   void execute() override;
 
   BusyJob(int threadsPerBlock, int threadBlocks);
+
+  std::string getMessage() override;
 };
 
 #endif

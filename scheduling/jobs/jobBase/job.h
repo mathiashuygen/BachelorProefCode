@@ -76,6 +76,8 @@ public:
   void setParentTask(Task *task);
 
   Task *getParentTask();
+
+  virtual std::string getMessage();
 };
 
 #endif // JOB_H
