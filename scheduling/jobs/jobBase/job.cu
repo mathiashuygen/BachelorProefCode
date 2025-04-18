@@ -35,10 +35,7 @@ void Job::notifyJobCompletion(Job *job, float jobCompletionTime) {
   }
 }
 
-void Job::addMask(MaskElement element) {
-  this->TPCMasks.push_back(element);
-  std::cout << "added mask";
-}
+void Job::addMask(MaskElement element) { this->TPCMasks.push_back(element); }
 
 uint64_t Job::combineMasks() {
   std::vector<MaskElement> masks = this->TPCMasks;

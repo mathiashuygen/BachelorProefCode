@@ -11,15 +11,8 @@ void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream,
   BusyJob::busyKernelLaunchInformation *kernelInfo =
       static_cast<BusyJob::busyKernelLaunchInformation *>(data);
 
-  // copy the result from device to host.
-  cudaMemcpy(kernelInfo->hostPtr, kernelInfo->devicePtr, kernelInfo->size,
-             cudaMemcpyDeviceToHost);
-
-  // std::cout<<"busy job from task "<<kernelInfo->taskId<<" took
-  // "<<*(kernelInfo->hostPtr)<<"s\n";
-
   // free the dynamically allocated memory and the stream.
-  free(kernelInfo->hostPtr);
+  cudaFreeHost(kernelInfo->hostPtr);
   cudaFree(kernelInfo->devicePtr);
   cudaFree(kernelInfo->timerDptr);
   cudaStreamDestroy(stream);
@@ -31,25 +24,20 @@ void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream,
 
 // callback constructor.
 void BusyJob::addBusyKernelCallback(Job *job, cudaStream_t stream, float *dptr,
-                                    float *timerDptr, float *hptr, size_t size,
-                                    int id) {
+                                    float *hptr, size_t size, int id) {
 
   BusyJob::busyKernelLaunchInformation *kernelInfo =
-      new BusyJob::busyKernelLaunchInformation(job, stream, dptr, timerDptr,
-                                               hptr, size, id);
+      new BusyJob::busyKernelLaunchInformation(job, stream, dptr, hptr, size,
+                                               id);
 
   cudaStreamAddCallback(stream, busyKernelCallback, kernelInfo, 0);
 }
 
 void BusyJob::execute() {
-  // Get device cudaGetDeviceProperties
-  cudaDeviceProp deviceProp;
-  cudaGetDeviceProperties(&deviceProp, 0);
 
   // Allocate memory
-  float *d_output, *d_timer;
+  float *d_output;
   cudaMalloc(&d_output, sizeof(float));
-  cudaMalloc(&d_timer, sizeof(float));
 
   cudaStream_t kernel_stream;
   cudaStreamCreate(&kernel_stream);
@@ -59,11 +47,21 @@ void BusyJob::execute() {
     uint64_t mask = this->combineMasks();
     libsmctrl_set_stream_mask(kernel_stream, mask);
   }
-  float *h_output = (float *)std::malloc(sizeof(float));
+  // allocate host memory using cuda. If done this way, copying from device to
+  // host can be done asynchronously.
+  // https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gb65da58f444e7230d3322b6126bb4902
+  float *h_output = nullptr;
+  size_t nbrOfBytes = sizeof(float);
+  cudaHostAlloc((void **)&h_output, nbrOfBytes, cudaHostAllocDefault);
 
-  maxUtilizationKernel<<<1, 1, 0, kernel_stream>>>(d_output, d_timer, 1000);
-  addBusyKernelCallback(this, kernel_stream, d_output, d_timer, h_output,
-                        sizeof(float), 1);
+  maxUtilizationKernel<<<1, 1, 0, kernel_stream>>>(d_output, 1000);
+  // define the asynchronous memory transfer here.
+  cudaMemcpyAsync(h_output, d_output, nbrOfBytes, cudaMemcpyHostToDevice,
+                  kernel_stream);
+  // this callback is called only when the kernel is finished and the memory
+  // copying is finished.
+  addBusyKernelCallback(this, kernel_stream, d_output, h_output, sizeof(float),
+                        1);
 }
 
 BusyJob::BusyJob(int threadsPerBlock, int threadBlocks) {
@@ -82,5 +80,5 @@ BusyJob::BusyJob(int threadsPerBlock, int threadBlocks) {
     return;
   }
   this->neededTPCs =
-      int(ceil(neededSMs / DeviceInfo::getDeviceProps()->getSMsPerTPC()));
+      ceil(neededSMs / DeviceInfo::getDeviceProps()->getSMsPerTPC());
 }

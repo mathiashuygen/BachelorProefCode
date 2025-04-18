@@ -88,7 +88,7 @@ void JLFP::dispatch() {
 }
 
 void JLFP::onJobCompletion(Job *job, float jobCompletionTime) {
-
+  std::cout << "job finished\n";
   this->TPCsInUse -= job->getNeededTPCs();
   // check if the job met its deadline.
   job->releaseMasks();

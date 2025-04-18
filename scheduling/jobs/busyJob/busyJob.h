@@ -19,9 +19,9 @@ private:
     int taskId;       // id of  the task invoking jobs.
 
     busyKernelLaunchInformation(Job *job, cudaStream_t stream, float *dptr,
-                                float *timeDptr, float *hptr, size_t sz, int id)
-        : jobPtr(job), kernelStream(stream), devicePtr(dptr),
-          timerDptr(timeDptr), hostPtr(hptr), size(sz), taskId(id) {}
+                                float *hptr, size_t sz, int id)
+        : jobPtr(job), kernelStream(stream), devicePtr(dptr), hostPtr(hptr),
+          size(sz), taskId(id) {}
   };
 
   // callback that is envoked at the end of each kernel execution.
@@ -30,8 +30,7 @@ private:
 
   // callback constructor.
   static void addBusyKernelCallback(Job *job, cudaStream_t stream, float *dptr,
-                                    float *timerDptr, float *hptr, size_t size,
-                                    int id);
+                                    float *hptr, size_t size, int id);
 
 public:
   // job definition that goes with a task.
