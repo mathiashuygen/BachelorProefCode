@@ -1,29 +1,27 @@
-import sys
-import os
 import pathlib
-import time
-from typing import Dict, Any, List, Optional
-
-# Add benchmarkTool to path for imports
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "../benchmarkTool/"))
-)
+from typing import Dict, Any, List
 
 from benchkit.benchmark import Benchmark
 from benchkit.platforms import Platform, get_current_platform
 from benchkit.campaign import CampaignCartesianProduct, CampaignSuite
+from benchkit.utils.dir import gitmainrootdir
+from gpus import get_gpu_docker_platform_from, get_gpu_builder, get_gpu_runner
+from smctrl import install_libsmctrl_from_src
+from pathlib import Path
 
+DOCKER = True
+GUEST_SRC_DIR = "/home/user/src"
 
 class SchedulerBenchmark(Benchmark):
     """Benchmark object for CUDA Scheduler comparisons."""
 
     def __init__(
         self,
-        src_dir: str,
+        src_dir: Path,
+        libsmctrl_dir: str,
         benchmark_file: str,
         scheduler_type: str,
         platform: Platform = None,
-        **kwargs,
     ) -> None:
         super().__init__(
             command_wrappers=(),
@@ -37,9 +35,10 @@ class SchedulerBenchmark(Benchmark):
             self.platform = platform
 
         self._bench_src_path = pathlib.Path(src_dir)
+        self._libsmctrl_dir = libsmctrl_dir
         self._benchmark_file = benchmark_file
         self._scheduler_type = scheduler_type
-        self._results_path = pathlib.Path("results/scheduler_comparison")
+        self._results_path = self._bench_src_path / "results/scheduler_comparison"
 
     @property
     def bench_src_path(self) -> pathlib.Path:
@@ -61,23 +60,20 @@ class SchedulerBenchmark(Benchmark):
         return super().dependencies() + []
 
     def build_bench(
-        self, threads_per_block: int, block_count: int, data_size: int, **kwargs
+        self,
+        threads_per_block: int,
+        block_count: int,
+        data_size: int,
+        **kwargs,
     ) -> None:
         # Create the results directory if it doesn't exist
-        os.makedirs(self._results_path, exist_ok=True)
+        self.platform.comm.makedirs(path=self._results_path, exist_ok=True)
 
-        # path to libsmctrl used for compilation.
-        LIBSMCTRL_PATH = (
-            "/home/muut/Documents/github/bachelorProefCode/commonLib/libsmctrl/"
-        )
-
-        # Compile the benchmark with the specific scheduler
-        self.platform.comm.shell(
-            command=[
+        command = [
                 "nvcc",
                 "-o",
                 f"{self._results_path}/{self._scheduler_type}_benchmark",
-                f'-DSCHEDULER_TYPE="{self._scheduler_type}"',
+                f'-DSCHEDULER_TYPE=\\"{self._scheduler_type}\\"',
                 f"-DTHREADS_PER_BLOCK={threads_per_block}",
                 f"-DBLOCK_COUNT={block_count}",
                 f"-DDATA_SIZE={data_size}",
@@ -95,12 +91,16 @@ class SchedulerBenchmark(Benchmark):
                 "../../common/helpFunctions.cu",
                 "../../common/deviceProps.cu",
                 "../../common/maskElement.cu",
-                f"-I{LIBSMCTRL_PATH}",
+                f"-I{self._libsmctrl_dir}",
                 "-lsmctrl",
                 "-lcuda",
                 "-lcudart",
-                f"-L{LIBSMCTRL_PATH}",
-            ],
+                f"-L{self._libsmctrl_dir}",
+            ]
+
+        # Compile the benchmark with the specific scheduler
+        self.platform.comm.shell(
+            command=command,
             current_dir=str(self.bench_src_path),
             output_is_log=True,
         )
@@ -136,7 +136,7 @@ class SchedulerBenchmark(Benchmark):
         """Parse the output from the benchmark run into structured results."""
         results = {
             "scheduler": self._scheduler_type,
-            "raw_output": command_output,
+            # "raw_output": command_output,
         }
 
         # Extract metrics from the output
@@ -155,24 +155,39 @@ class SchedulerBenchmark(Benchmark):
         return results
 
 
+def get_docker_platform(
+    host_src_dir: str,
+) -> Platform:
+    builder = get_gpu_builder()
+    install_libsmctrl_from_src(
+        builder=builder,
+        workdir="/home/${USER_NAME}/workspace/libraries",
+    )
+    builder.build()
+    runner = get_gpu_runner()
+
+    docker_platform = get_gpu_docker_platform_from(
+        runner=runner,
+        host_src_dir=host_src_dir,
+        guest_src_dir=GUEST_SRC_DIR,
+    )
+
+    return docker_platform
+
 def scheduler_campaign(
     name: str = "scheduler_comparison",
     benchmark_file: str = "../../schedulerTestBenchmark.cu",
-    src_dir: Optional[str] = None,
-    results_dir: Optional[str] = None,
-    platform: Platform = None,
 ):
     """Create a campaign to compare different schedulers."""
-    if src_dir is None:
-        src_dir = os.path.abspath(os.path.dirname(__file__))
-
-    if results_dir is None:
-        results_dir = os.path.join(src_dir, "results/scheduler_comparison")
-
-    os.makedirs(results_dir, exist_ok=True)
-
-    if platform is None:
+    gmrd = gitmainrootdir()
+    if DOCKER:
+        platform = get_docker_platform(host_src_dir=str(gmrd))
+        libsmctrl_dir = "/home/user/workspace/libraries/libsmctrl"
+        src_dir = Path(GUEST_SRC_DIR)
+    else:
         platform = get_current_platform()
+        libsmctrl_dir = "/home/muut/Documents/github/bachelorProefCode/commonLib/libsmctrl"
+        src_dir = gmrd
 
     # Define the schedulers to test
     schedulers = ["JLFP", "FCFS", "dumbScheduler"]
@@ -182,7 +197,8 @@ def scheduler_campaign(
 
     for scheduler in schedulers:
         bench = SchedulerBenchmark(
-            src_dir=src_dir,
+            src_dir=src_dir / "scheduling/benchmarks/customBenchmarks",
+            libsmctrl_dir=libsmctrl_dir,
             benchmark_file=benchmark_file,
             scheduler_type=scheduler,
             platform=platform,
@@ -204,7 +220,6 @@ def scheduler_campaign(
             enable_data_dir=True,
             continuing=False,
             benchmark_duration_seconds=30,
-            results_dir=results_dir,
         )
 
         campaigns.append(campaign)
@@ -213,8 +228,7 @@ def scheduler_campaign(
 
 
 # Add this code at the end of your file where the plots are generated
-
-if __name__ == "__main__":
+def main() -> None:
     campaigns = scheduler_campaign()
 
     # Create a campaign suite to run all campaigns
@@ -224,3 +238,7 @@ if __name__ == "__main__":
 
     # Generate a combined CSV file with all results
     suite.generate_global_csv()
+
+
+if __name__ == "__main__":
+    main()

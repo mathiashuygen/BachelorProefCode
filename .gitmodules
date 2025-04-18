@@ -1,3 +1,6 @@
 [submodule "scheduling/benchmarks/benchmarkTool"]
 	path = scheduling/benchmarks/benchmarkTool
 	url = https://github.com/open-s4c/benchkit.git
+[submodule "scheduling/benchmarks/deps/pythainer"]
+	path = scheduling/benchmarks/deps/pythainer
+	url = git@github.com:apaolillo/pythainer.git
