@@ -36,9 +36,8 @@ void DeviceInfo::initTPCMaskVector() {
     // Clear the bit at the specified index
     mask &= ~(1ULL << i);
 
-    MaskElement element(i, true, mask);
     // push the new element to the back.
-    TPCMasks.push_back(element);
+    TPCMasks.push_back(MaskElement(i, true, mask));
   }
 }
 

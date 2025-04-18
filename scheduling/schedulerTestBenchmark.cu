@@ -99,8 +99,7 @@ void runBenchmark(BaseScheduler *scheduler, int numTasks, int threadsPerBlock,
     // Process any tasks that are ready to release jobs
     for (auto &task : tasks) {
       if (task.isJobReady()) {
-        Job *job = task.releaseJob();
-        scheduler->addJob(job);
+        scheduler->addJob(task.releaseJob());
       }
     }
 

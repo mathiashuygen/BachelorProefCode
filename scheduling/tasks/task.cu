@@ -3,6 +3,7 @@
  * */
 
 #include "task.h"
+#include <algorithm>
 
 Task::Task(int offset, int compute_time, int rel_deadline, int period,
            std::unique_ptr<JobFactoryBase> jobFactory, int id)
@@ -30,18 +31,23 @@ Job *Task::releaseJob() {
 
   // get a random absolute deadline for the job.
   float absoluteDeadline = realDist(gen);
+
   // create a new job using the factory.
-  this->job = this->jobFactory->createJob();
+  this->activeJobs.push_back(this->jobFactory->createJob());
+
+  Job *job = this->activeJobs.back().get();
+
+  job->setParentTask(this);
 
   float currentTime = getCurrentTime();
   // set the job's absolute deadline.
-  this->job->setAbsoluteDeadline(currentTime + absoluteDeadline);
+  job->setAbsoluteDeadline(currentTime + absoluteDeadline);
   // set the most recent job releae time. This is needed because tasks release
   // jobs periodically. The previous job's release time is used to check if
   // enough time has passed for a new job to be ready.
   this->previousJobRelease = currentTime;
 
-  return this->job.get();
+  return job;
 }
 
 int Task::get_offset() { return this->offset; }
@@ -56,4 +62,14 @@ int Task::get_id() { return this->id; }
 
 float Task::getBeginTime() { return this->beginTime; }
 
-Job *Task::getJob() const { return this->job.get(); }
+// loop over the list and look for the job to be deleted. Since the list
+// contains unique pointers, erasing the pointer from the list will trigger the
+// clean up of the job instance. The job is not needed after execution so this
+// is safe to do.
+void Task::cleanUpJob(Job *job) {
+  auto iterator = std::find_if(activeJobs.begin(), activeJobs.end(),
+                               [job](auto &uptr) { return uptr.get() == job; });
+  if (iterator != this->activeJobs.end()) {
+    this->activeJobs.erase(iterator);
+  }
+}

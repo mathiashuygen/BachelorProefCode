@@ -2,6 +2,7 @@
 // priority at launch time. Priorities can overlap, it is left to the scheduler
 // on how to deal with this.
 
+#include "../../tasks/task.h"
 #include "JLFP.h"
 
 JLFP::jobQueue JLFP::createNewJobQueue(Job *job) {
@@ -96,6 +97,8 @@ void JLFP::onJobCompletion(Job *job, float jobCompletionTime) {
     this->incDeadlineMisses();
   }
   this->incJobsCompleted();
+  // makes sure the job is cleaned up by thet task.
+  job->getParentTask()->cleanUpJob(job);
 }
 
 /*

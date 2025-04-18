@@ -18,6 +18,7 @@
 
 // forward declaration to have access to the jobObserver type.
 class JobObserver;
+class Task;
 
 class Job {
 
@@ -31,6 +32,7 @@ protected:
   int threadBlocks, threadsPerBlock;
   static JobObserver *observer;
   std::vector<MaskElement> TPCMasks;
+  Task *parent;
 
 public:
   // run time information of a job. Gets defined when a task releases a job.
@@ -70,6 +72,10 @@ public:
   uint64_t combineMasks();
 
   void releaseMasks();
+
+  void setParentTask(Task *task);
+
+  Task *getParentTask();
 };
 
 #endif // JOB_H

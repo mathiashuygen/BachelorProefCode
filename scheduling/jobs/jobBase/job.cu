@@ -1,3 +1,4 @@
+#include "../../tasks/task.h"
 #include "job.h"
 
 void Job::setMaximumExecutionTime(float time) { this->releaseTime = time; }
@@ -34,7 +35,10 @@ void Job::notifyJobCompletion(Job *job, float jobCompletionTime) {
   }
 }
 
-void Job::addMask(MaskElement element) { this->TPCMasks.push_back(element); }
+void Job::addMask(MaskElement element) {
+  this->TPCMasks.push_back(element);
+  std::cout << "added mask";
+}
 
 uint64_t Job::combineMasks() {
   std::vector<MaskElement> masks = this->TPCMasks;
@@ -58,3 +62,7 @@ void Job::releaseMasks() {
     DeviceInfo::getDeviceProps()->enableTPC(element.getIndex());
   }
 }
+
+void Job::setParentTask(Task *task) { this->parent = task; }
+
+Task *Job::getParentTask() { return this->parent; }

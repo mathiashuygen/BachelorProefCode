@@ -41,7 +41,6 @@ void BusyJob::addBusyKernelCallback(Job *job, cudaStream_t stream, float *dptr,
   cudaStreamAddCallback(stream, busyKernelCallback, kernelInfo, 0);
 }
 
-// job definition that goes with a task.
 void BusyJob::execute() {
   // Get device cudaGetDeviceProperties
   cudaDeviceProp deviceProp;
@@ -56,6 +55,7 @@ void BusyJob::execute() {
   cudaStreamCreate(&kernel_stream);
   // set the stream's mask using libsmctrl.
   if (!this->TPCMasks.empty()) {
+    std::cout << "mask set";
     uint64_t mask = this->combineMasks();
     libsmctrl_set_stream_mask(kernel_stream, mask);
   }
