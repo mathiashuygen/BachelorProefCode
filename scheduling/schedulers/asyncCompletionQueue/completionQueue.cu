@@ -1,10 +1,13 @@
 #include "completionQueue.h"
 
 void CompletionQueue::push(CompletionEvent event) {
+  // lock the queue for the push.
   {
     std::lock_guard lk(mtx);
     jobCleanUpQueue.push(event);
   }
+  // notify the waiting clean up thread that an element has been pushed to the
+  // queue => the thread can now pop from the queue.
   cv.notify_one();
 }
 

@@ -18,7 +18,7 @@
 
 struct CompletionEvent {
   Job *job;
-  int completionTime;
+  float completionTime;
 };
 
 class CompletionQueue {

@@ -16,7 +16,9 @@ void CUDART_CB PrintJob::printKernelCallback(cudaStream_t stream,
   cudaStreamDestroy(stream);
 
   // push completed job to async clean up queue.
-  CompletionQueue::getCompletionQueue().push({kernelInfo->jobPtr});
+  float currentTime = getCurrentTime();
+  CompletionQueue::getCompletionQueue().push({kernelInfo->jobPtr, currentTime});
+
   delete (kernelInfo);
 }
 
@@ -43,7 +45,7 @@ void PrintJob::execute() {
   size_t nbrOfBytes = sizeof(float);
   cudaHostAlloc((void **)&h_output, nbrOfBytes, cudaHostAllocDefault);
 
-  printMessage<<<1, 1, 0, kernel_stream>>>(1, 1, 10000000, d_output);
+  printMessage<<<1, 1, 0, kernel_stream>>>(1, 1, 1, d_output);
   cudaMemcpyAsync(h_output, d_output, nbrOfBytes, cudaMemcpyHostToDevice,
                   kernel_stream);
 

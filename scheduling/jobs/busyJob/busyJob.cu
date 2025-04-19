@@ -19,7 +19,11 @@ void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream,
 
   // push the job to the clean up queue which the scheduler will handle in its
   // own thread.
-  CompletionQueue::getCompletionQueue().push({kernelInfo->jobPtr});
+  // current time is called inside the cuda runtime thread spawned by the
+  // callback => safe to call host function because it will not interfere with
+  // the main thread.
+  float currentTime = getCurrentTime();
+  CompletionQueue::getCompletionQueue().push({kernelInfo->jobPtr, currentTime});
 
   delete (kernelInfo);
 }
@@ -53,7 +57,7 @@ void BusyJob::execute() {
   float *h_output = nullptr;
   size_t nbrOfBytes = sizeof(float);
   cudaHostAlloc((void **)&h_output, nbrOfBytes, cudaHostAllocDefault);
-  maxUtilizationKernel<<<10, 10, 0, kernel_stream>>>(d_output, 1);
+  maxUtilizationKernel<<<10, 10, 0, kernel_stream>>>(d_output, 10000000);
   // define the asynchronous memory transfer here.
   cudaMemcpyAsync(h_output, d_output, nbrOfBytes, cudaMemcpyHostToDevice,
                   kernel_stream);
