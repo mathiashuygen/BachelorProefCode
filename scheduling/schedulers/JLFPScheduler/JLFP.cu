@@ -17,8 +17,9 @@ void JLFP::dispatch() {
     // loop over the queues in a decreasing priority order.
     std::queue<Job *> currJobQueue = priorityQueue.back().jobs;
     while (!currJobQueue.empty()) {
+      int TPCsInUse = DeviceInfo::getDeviceProps()->TPCsInUse();
       Job *currJob = currJobQueue.front();
-      // case where a job needs more TPCs than there are on the device, give it
+      // case where a job needs more TPCs than there are on the device, give i
       // 1/2 of the TPCs.
       if (currJob->getNeededTPCs() >
               DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() &&
@@ -33,7 +34,6 @@ void JLFP::dispatch() {
         }
         // else pop the job and launch it.
         currJobQueue.pop();
-        this->TPCsInUse = neededTPCs;
         currJob->setJobObserver(this);
         setJobTPCMask(neededTPCs, currJob);
         currJob->execute();
@@ -49,11 +49,10 @@ void JLFP::dispatch() {
         int neededTPCs = DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice();
         // if there are TPCs in use, the job has to wait for all the TPCs to
         // free up.
-        if (this->TPCsInUse > 0) {
+        if (TPCsInUse > 0) {
           continue;
         }
         currJobQueue.pop();
-        this->TPCsInUse = neededTPCs;
         currJob->setJobObserver(this);
         setJobTPCMask(neededTPCs, currJob);
         currJob->execute();
@@ -67,11 +66,10 @@ void JLFP::dispatch() {
        even though all jobs in this inner queue have the same deadline
        priority.
       */
-      else if (currJob->getNeededTPCs() + this->TPCsInUse <=
+      else if (currJob->getNeededTPCs() + TPCsInUse <=
                DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
         currJobQueue.pop();
         int neededTPCs = currJob->getNeededTPCs();
-        this->TPCsInUse = this->TPCsInUse + neededTPCs;
         // set the observer. Used to notify the scheduler of the job's
         // completion. When a job is finished with executing its kernel, the job
         // notifies to scheduler which will perform a clean-up.
@@ -89,7 +87,6 @@ void JLFP::dispatch() {
 
 void JLFP::onJobCompletion(Job *job, float jobCompletionTime) {
   std::cout << job->getMessage() << std::endl;
-  this->TPCsInUse -= job->getNeededTPCs();
   // check if the job met its deadline.
   job->releaseMasks();
   if (!(job->getReleaseTime() + job->getAbsoluteDeadline() <
@@ -192,8 +189,9 @@ void JLFP::cleanUpLoop() {
   while (running) {
     CompletionEvent event;
     if (CompletionQueue::getCompletionQueue().pop(event)) {
-      // call job cleanUp method in this thread.
+
       this->onJobCompletion(event.job, event.completionTime);
+      // delete the instance (it was heap allocated).
     } else {
       // pop returned false, means queue
       // is empty

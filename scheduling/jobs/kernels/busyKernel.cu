@@ -8,6 +8,6 @@ __global__ void maxUtilizationKernel(float *output, int loopDuration) {
   float value = 0.0f;
   for (int i = 0; i < loopDuration; i++) {
     value += sinf(10 * 0.1f + i) * cosf(10 * 0.1f);
-    output[1] = value;
+    *output = value;
   }
 }

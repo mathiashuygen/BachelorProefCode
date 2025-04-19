@@ -3,36 +3,29 @@
 
 #include "../../schedulers/asyncCompletionQueue/completionQueue.h"
 #include "../jobBase/job.h"
+#include "../jobLaunchInformation/printJobLaunchInformation.h"
 #include "../kernels/printKernel.h"
+#include <cstddef>
 #include <cuda_runtime.h>
 #include <iostream>
 
 class PrintJob : public Job {
 
 private:
-  struct printKernelLaunchInformation {
-    Job *jobPtr; // pointer to the job, used for notifying the scheduler of
-                 // job's completion.
-    cudaStream_t kernelStream; // stream in which the kernel is launched.
-    float *devicePtr;          // Device memory pointer
-    float *hostPtr;            // Host memory pointer
-    size_t size;               // Size of data to copy in bytes
-    int taskId;                // id of  the task invoking jobs.
-
-    printKernelLaunchInformation(Job *job, cudaStream_t stream, float *dptr,
-                                 float *hptr, size_t sz, int id)
-        : jobPtr(job), kernelStream(stream), devicePtr(dptr), hostPtr(hptr),
-          size(sz), taskId(id) {}
-  };
   static void CUDART_CB printKernelCallback(cudaStream_t stream,
                                             cudaError_t status, void *data);
   static void addPrintKernelCallback(Job *job, cudaStream_t stream, float *dptr,
                                      float *hptr, size_t size, int id);
+  size_t nbrOfBytes;
+  float *hostPtr = nullptr;
+  float *dptr;
+  cudaStream_t jobStream;
 
 public:
   virtual void execute() override;
 
   PrintJob(int threadsPerBlock, int threadBlocks);
+  ~PrintJob() override;
 
   std::string getMessage() override;
 };

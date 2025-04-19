@@ -2,6 +2,7 @@
 #include "jobs/busyJob/busyJob.h"
 #include "jobs/jobFactory/jobFactory.h"
 #include "jobs/printJob/printJob.h"
+#include "jobs/vectorAddJob/vectorAddJob.h"
 #include "schedulers/FCFSScheduler/FCFSScheduler.h"
 #include "schedulers/JLFPScheduler/JLFP.h"
 #include "schedulers/dumbScheduler/dumbScheduler.h"
@@ -14,11 +15,29 @@ int main() {
 
   std::unique_ptr<JobFactoryBase> printJobFactory =
       JobFactory<PrintJob, int, int>::create(20, 10);
+  std::unique_ptr<JobFactoryBase> printJobFactory2 =
+      JobFactory<PrintJob, int, int>::create(20, 10);
+  std::unique_ptr<JobFactoryBase> printJobFactory3 =
+      JobFactory<PrintJob, int, int>::create(20, 10);
+  std::unique_ptr<JobFactoryBase> printJobFactory4 =
+      JobFactory<PrintJob, int, int>::create(20, 10);
+
   std::unique_ptr<JobFactoryBase> busyJobFactory =
       JobFactory<BusyJob, int, int>::create(10, 10);
+  std::unique_ptr<JobFactoryBase> busyJobFactory2 =
+      JobFactory<BusyJob, int, int>::create(10, 10);
+  std::unique_ptr<JobFactoryBase> vectorAddJobFactory =
+      JobFactory<VectorAddJob, int, int>::create(512, 10000000);
 
   tasks.push_back(Task(10, 10, 60, 5, std::move(busyJobFactory), 2));
   tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory), 1));
+  tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory2), 1));
+  tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory3), 1));
+  //  tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory4), 1));
+
+  // tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory), 1));
+
+  // tasks.push_back(Task(10, 10, 20, 5, std::move(busyJobFactory2), 1));
 
   JLFP scheduler1;
   DumbScheduler scheduler2;

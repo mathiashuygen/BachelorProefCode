@@ -22,7 +22,7 @@ private:
   bool firstJobReleased = false;
   std::unique_ptr<JobFactoryBase> jobFactory;
   // job vector. Used to have ownership of the job until it is completed.
-  std::list<std::unique_ptr<Job>> activeJobs;
+  std::vector<std::unique_ptr<Job>> activeJobs;
 
 public:
   Task(int offset, int compute_time, int rel_deadline, int period,

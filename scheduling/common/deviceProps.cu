@@ -41,11 +41,20 @@ void DeviceInfo::initTPCMaskVector() {
   }
 }
 
-std::vector<MaskElement> DeviceInfo::getTPCMasks() { return this->TPCMasks; }
+std::vector<MaskElement> DeviceInfo::getTPCMasks() {
+  std::lock_guard<std::mutex> lock(tpcMaskMutex);
+  return this->TPCMasks;
+}
 
-void DeviceInfo::disableTPC(int index) { this->TPCMasks.at(index).disable(); }
+void DeviceInfo::disableTPC(int index) {
+  std::lock_guard<std::mutex> lock(tpcMaskMutex);
+  this->TPCMasks.at(index).disable();
+}
 
-void DeviceInfo::enableTPC(int index) { this->TPCMasks.at(index).enable(); }
+void DeviceInfo::enableTPC(int index) {
+  std::lock_guard<std::mutex> lock(tpcMaskMutex);
+  this->TPCMasks.at(index).enable();
+}
 
 DeviceInfo::DeviceInfo() {
   this->initTPCMaskVector();
@@ -66,3 +75,14 @@ int DeviceInfo::getMaxThreadsPerSM() { return maxThreadsPerSM; }
 int DeviceInfo::getSMsPerTPC() { return SMsPerTPC; }
 
 void DeviceInfo::deleteDevicePropsInstance() { delete (deviceProps); }
+
+int DeviceInfo::TPCsInUse() {
+  std::lock_guard<std::mutex> lock(tpcMaskMutex);
+  int count = 0;
+  for (MaskElement element : TPCMasks) {
+    if (!(element.isFree())) {
+      count += 1;
+    }
+  }
+  return count;
+}

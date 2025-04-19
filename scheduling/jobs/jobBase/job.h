@@ -78,6 +78,8 @@ public:
   Task *getParentTask();
 
   virtual std::string getMessage();
+
+  virtual ~Job() = default;
 };
 
 #endif // JOB_H

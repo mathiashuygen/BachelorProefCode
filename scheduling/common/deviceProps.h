@@ -2,8 +2,10 @@
 #include <cmath>
 #include <cstdint>
 #include <iostream>
+#include <mutex>
 #include <sys/types.h>
 #include <vector>
+
 class DeviceInfo {
 
 private:
@@ -13,6 +15,8 @@ private:
   static int totalTPCsOnDevice;
   static int maxThreadsPerSM;
   static int SMsPerTPC;
+  // mutex used to lock TPC read and writes.
+  mutable std::mutex tpcMaskMutex;
 
 public:
   std::vector<MaskElement> TPCMasks;
@@ -31,4 +35,6 @@ public:
   static DeviceInfo *getDeviceProps();
   // clean-up code.
   void deleteDevicePropsInstance();
+
+  int TPCsInUse();
 };

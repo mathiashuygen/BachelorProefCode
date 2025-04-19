@@ -11,6 +11,7 @@
 #define COMPLETION_QUEUE_H
 
 #include "../../jobs/jobBase/job.h"
+#include "../../jobs/jobLaunchInformation/baseLaunchInformation.h"
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
@@ -19,6 +20,7 @@
 struct CompletionEvent {
   Job *job;
   float completionTime;
+  KernelLaunchInfoBase *jobLaunchInfo;
 };
 
 class CompletionQueue {
