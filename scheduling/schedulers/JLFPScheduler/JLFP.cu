@@ -30,6 +30,7 @@ void JLFP::dispatch() {
         // if there aren't enough TPCs available, have the job wait until enough
         // of them free up.
         if (DeviceInfo::getTotalTPCsOnDevice() - TPCsInUse < neededTPCs) {
+          std::cout << "waited for more tpcs(/2)\n";
           continue;
         }
         // else pop the job and launch it.
@@ -50,6 +51,7 @@ void JLFP::dispatch() {
         // if there are TPCs in use, the job has to wait for all the TPCs to
         // free up.
         if (TPCsInUse > 0) {
+          std::cout << "waited for more tpcs(> 0)\n";
           continue;
         }
         currJobQueue.pop();
@@ -78,6 +80,9 @@ void JLFP::dispatch() {
         setJobTPCMask(neededTPCs, currJob);
         currJob->execute();
         // std::cout << "launched a job\n";
+      } else {
+        std::cout << "waited for more tpcs\n";
+        continue;
       }
     }
     // pop the level from the queue.

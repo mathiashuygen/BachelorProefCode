@@ -93,3 +93,17 @@ VectorAddJob::VectorAddJob(int threadsPerBlock, int vectorSize) {
 }
 
 std::string VectorAddJob::getMessage() { return "vector addition done\n"; }
+
+VectorAddJob::~VectorAddJob() {
+  cudaStreamSynchronize(this->kernelStream);
+
+  cudaStreamDestroy(this->kernelStream);
+
+  // Clean up other resources
+  cudaFree(this->d_A);
+  cudaFree(this->d_B);
+  cudaFree(this->d_C);
+  cudaFreeHost(this->A);
+  cudaFreeHost(this->B);
+  cudaFreeHost(this->C);
+}

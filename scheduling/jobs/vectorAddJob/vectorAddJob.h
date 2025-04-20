@@ -36,6 +36,7 @@ public:
   void execute() override;
 
   VectorAddJob(int threadsPerBlock, int vectorSize);
+  ~VectorAddJob() override;
 
   std::string getMessage() override;
 };
