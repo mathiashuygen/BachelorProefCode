@@ -27,8 +27,7 @@ void PrintJob::addPrintKernelCallback(Job *job, cudaStream_t stream,
                                       float *dptr, float *hptr, size_t size,
                                       int id) {
 
-  PrintJobLaunchInfo *kernelInfo =
-      new PrintJobLaunchInfo(job, stream, dptr, hptr, size, id);
+  PrintJobLaunchInfo *kernelInfo = new PrintJobLaunchInfo(job);
   cudaStreamAddCallback(stream, printKernelCallback, kernelInfo, 0);
 }
 
@@ -37,7 +36,7 @@ void PrintJob::execute() {
   // Allocate memory
   if (!this->TPCMasks.empty()) {
     uint64_t mask = this->combineMasks();
-    libsmctrl_set_stream_mask(this->jobStream, mask);
+    libsmctrl_set_stream_mask((void *)(this->jobStream), mask);
   }
   printMessage<<<1, 1, 0, this->jobStream>>>(1, 1, 1);
   CUDA_CHECK(cudaGetLastError());

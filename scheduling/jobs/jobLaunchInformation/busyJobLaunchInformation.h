@@ -7,20 +7,11 @@
 
 class BusyJobLaunchInfo : public KernelLaunchInfoBase {
 public:
-  cudaStream_t kernelStream;
-  float *devicePtr;
-  float *hostPtr;
-  float *timerptr;
-  size_t size;
-  int id;
-  BusyJobLaunchInfo(Job *job, cudaStream_t stream, float *dptr, float *hptr,
-                    size_t size, int id)
-      : KernelLaunchInfoBase(job), kernelStream(stream), devicePtr(dptr),
-        hostPtr(hptr), size(size), id(id) {}
+  BusyJobLaunchInfo(Job *job)
 
-  ~BusyJobLaunchInfo() override = default;
+      : KernelLaunchInfoBase(job) {}
 
-  void cleanup() override;
+  ~BusyJobLaunchInfo() override;
 };
 
 #endif

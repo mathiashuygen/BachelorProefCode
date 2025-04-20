@@ -1,10 +1,5 @@
 #include "busyJobLaunchInformation.h"
-
-void BusyJobLaunchInfo::cleanup() {
-  cudaStreamSynchronize(this->kernelStream);
-
-  cudaFreeHost(this->hostPtr);
-  cudaFree(this->devicePtr);
-  cudaFree(this->timerptr);
-  cudaStreamDestroy(this->kernelStream);
+#include <iostream>
+BusyJobLaunchInfo::~BusyJobLaunchInfo() {
+  std::cout << "deleted busy job launch info\n";
 }

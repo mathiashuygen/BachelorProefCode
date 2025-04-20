@@ -27,13 +27,17 @@ int main() {
   std::unique_ptr<JobFactoryBase> busyJobFactory2 =
       JobFactory<BusyJob, int, int>::create(10, 10);
   std::unique_ptr<JobFactoryBase> vectorAddJobFactory =
-      JobFactory<VectorAddJob, int, int>::create(512, 10000000);
+      JobFactory<VectorAddJob, int, int>::create(512, 100000);
+  std::unique_ptr<JobFactoryBase> vectorAddJobFactory2 =
+      JobFactory<VectorAddJob, int, int>::create(512, 100000);
 
   tasks.push_back(Task(10, 10, 60, 5, std::move(busyJobFactory), 2));
   tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory), 1));
   tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory2), 1));
   tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory3), 1));
-  //  tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory4), 1));
+  tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory4), 1));
+  tasks.push_back(Task(10, 10, 20, 5, std::move(vectorAddJobFactory), 1));
+  tasks.push_back(Task(10, 10, 20, 5, std::move(vectorAddJobFactory2), 1));
 
   // tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory), 1));
 

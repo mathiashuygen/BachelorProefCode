@@ -31,8 +31,7 @@ void CUDART_CB BusyJob::busyKernelCallback(cudaStream_t stream,
 void BusyJob::addBusyKernelCallback(Job *job, cudaStream_t stream, float *dptr,
                                     float *hptr, size_t size, int id) {
 
-  BusyJobLaunchInfo *kernelInfo =
-      new BusyJobLaunchInfo(job, stream, dptr, hptr, size, id);
+  BusyJobLaunchInfo *kernelInfo = new BusyJobLaunchInfo(job);
 
   cudaStreamAddCallback(stream, busyKernelCallback, kernelInfo, 0);
 }
@@ -42,7 +41,7 @@ void BusyJob::execute() {
   // Allocate memory
   if (!this->TPCMasks.empty()) {
     uint64_t mask = this->combineMasks();
-    libsmctrl_set_stream_mask(this->busyStream, mask);
+    libsmctrl_set_stream_mask((void *)(this->busyStream), mask);
   }
   maxUtilizationKernel<<<10, 10, 0, this->busyStream>>>(this->dptr, 1000000);
   // define the asynchronous memory transfer here.

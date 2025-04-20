@@ -3,31 +3,14 @@
 
 #include "../../schedulers/asyncCompletionQueue/completionQueue.h"
 #include "../jobBase/job.h"
+#include "../jobLaunchInformation/vectorAddJobLauncInformation.h"
 #include "../kernels/vectorAdd.h"
+#include <cstddef>
 #include <cuda_runtime.h>
 
 class VectorAddJob : public Job {
 
 private:
-  struct vectorAddKernelLaunchInformation {
-    Job *jobPtr;
-    cudaStream_t kernelStream; // stream in which the kernel is launched.
-    // device pointers
-    float *d_A;
-    float *d_B;
-    float *d_C;
-    // host pointers
-    float *A;
-    float *B;
-    float *C;
-
-    vectorAddKernelLaunchInformation(Job *job, cudaStream_t stream, float *d_A,
-                                     float *d_B, float *d_C, float *A, float *B,
-                                     float *C)
-        : jobPtr(job), kernelStream(stream), d_A(d_A), d_B(d_B), d_C(d_C), A(A),
-          B(B), C(C) {}
-  };
-
   // callback that is envoked at the end of each kernel execution.
   static void CUDART_CB vectorAddKernelCallback(cudaStream_t stream,
                                                 cudaError_t status, void *data);
@@ -38,6 +21,15 @@ private:
                                          float *A, float *B, float *C);
 
   int vectorSize = 0;
+  float *d_A;
+  float *d_B;
+  float *d_C;
+  // host pointers
+  float *A = nullptr;
+  float *B = nullptr;
+  float *C = nullptr;
+  cudaStream_t kernelStream;
+  size_t nrOfElements;
 
 public:
   // job definition that goes with a task.

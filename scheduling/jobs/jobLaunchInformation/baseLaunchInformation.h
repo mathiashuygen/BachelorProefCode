@@ -10,7 +10,6 @@ public:
   KernelLaunchInfoBase(Job *job) : jobPtr(job) {}
 
   virtual ~KernelLaunchInfoBase() = default;
-  virtual void cleanup() = 0;
 };
 
 #endif
