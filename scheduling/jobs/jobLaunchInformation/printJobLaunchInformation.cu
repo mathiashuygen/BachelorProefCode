@@ -1,5 +1,3 @@
 #include "printJobLaunchInformation.h"
 #include <iostream>
-PrintJobLaunchInfo::~PrintJobLaunchInfo() {
-  std::cout << "deleted print job launch info\n";
-}
+PrintJobLaunchInfo::~PrintJobLaunchInfo() { return; }

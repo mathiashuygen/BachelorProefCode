@@ -1,11 +1,17 @@
 import pathlib
 from typing import Dict, Any, List
+import sys
 
+sys.path.insert(0, "/home/muut/Documents/github/bachelorProefCode")
 from benchkit.benchmark import Benchmark
 from benchkit.platforms import Platform, get_current_platform
 from benchkit.campaign import CampaignCartesianProduct, CampaignSuite
 from benchkit.utils.dir import gitmainrootdir
-from gpus import get_gpu_docker_platform_from, get_gpu_builder, get_gpu_runner
+from scheduling.benchmarks.benchmarkTool.examples.gpus.kit.gpus import (
+    get_gpu_runner,
+    get_gpu_docker_platform_from,
+    get_gpu_builder,
+)
 from smctrl import install_libsmctrl_from_src
 from pathlib import Path
 
@@ -84,11 +90,20 @@ class SchedulerBenchmark(Benchmark):
             "../../schedulers/JLFPScheduler/JLFP.cu",
             "../../schedulers/dumbScheduler/dumbScheduler.cu",
             "../../schedulers/FCFSScheduler/FCFSScheduler.cu",
+            "../../schedulers/asyncCompletionQueue/completionQueue.cu",
             "../../jobs/kernels/busyKernel.cu",
             "../../jobs/kernels/printKernel.cu",
+            "../../jobs/kernels/vectorAdd.cu",
+            "../../jobs/kernels/matrixMultiplication.cu",
             "../../jobs/jobBase/job.cu",
             "../../jobs/printJob/printJob.cu",
             "../../jobs/busyJob/busyJob.cu",
+            "../../jobs/vectorAddJob/vectorAddJob.cu",
+            "../../jobs/matrixMultiplicationJob/matrixMultiplicationJob.cu",
+            "../../jobs/jobLaunchInformation/busyJobLaunchInformation.cu",
+            "../../jobs/jobLaunchInformation/printJobLaunchInformation.cu",
+            "../../jobs/jobLaunchInformation/vectorAddJobLaunchInformation.cu",
+            "../../jobs/jobLaunchInformation/matrixMultiplicationJobLaunchInformation.cu",
             "../../common/helpFunctions.cu",
             "../../common/deviceProps.cu",
             "../../common/maskElement.cu",
@@ -231,7 +246,6 @@ def scheduler_campaign(
     return campaigns
 
 
-# Add this code at the end of your file where the plots are generated
 def main() -> None:
     campaigns = scheduler_campaign()
 

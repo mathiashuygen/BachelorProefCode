@@ -5,14 +5,6 @@
 // on how to deal with this.
 #include "../asyncCompletionQueue/completionQueue.h"
 #include "../schedulerBase/scheduler.h"
-#include <atomic>
-#include <cinttypes>
-#include <cstdint>
-#include <iostream>
-#include <memory>
-#include <queue>
-#include <sys/types.h>
-#include <thread>
 
 class JLFP : public BaseScheduler, public JobObserver {
 private:
@@ -44,6 +36,7 @@ public:
 
   // added constructor to overwrite running boolean.
   JLFP();
+  ~JLFP() override;
 };
 
 #endif

@@ -5,12 +5,9 @@ void BaseScheduler::setJobTPCMask(int amountOfTPCs, Job *job) {
   int amountOfFreeTPCsFound = 0;
   while (amountOfFreeTPCsFound < amountOfTPCs) {
     if (masks.empty()) {
-      // This should not happen if amountOfTPCs is calculated correctly
-      // and there are enough free TPCs, but it's a crucial safety check.
       std::cerr
           << "ERROR: Ran out of masks in setJobTPCMask while still needing "
           << (amountOfTPCs - amountOfFreeTPCsFound) << " TPCs!" << std::endl;
-      // Handle error appropriately - maybe break, maybe throw, maybe assert
       break;
     }
     MaskElement element = masks.back();

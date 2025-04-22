@@ -39,3 +39,34 @@ void FCFSScheduler::onJobCompletion(Job *job, float jobCompletionTime) {
   }
   this->incJobsCompleted();
 }
+
+FCFSScheduler::FCFSScheduler() {
+  // init the thread.
+  this->running = true;
+  this->cleanUpThread = std::thread([this] { this->cleanUpLoop(); });
+}
+
+void FCFSScheduler::cleanUpLoop() {
+  while (this->running) {
+    CompletionEvent event;
+    if (CompletionQueue::getCompletionQueue().pop(event)) {
+      if (!this->running) {
+        break;
+      }
+      delete (event.jobLaunchInfo);
+      this->onJobCompletion(event.job, event.completionTime);
+      // delete the heap allocated launch info instance.
+    } else {
+      // pop returned false, means shutdown.
+      break;
+    }
+  }
+}
+
+FCFSScheduler::~FCFSScheduler() {
+  this->running = false;
+  CompletionQueue::getCompletionQueue().shutdown();
+  if (this->cleanUpThread.joinable()) {
+    this->cleanUpThread.join();
+  }
+}

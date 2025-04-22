@@ -21,3 +21,34 @@ void DumbScheduler::onJobCompletion(Job *job, float jobCompletionTime) {
   }
   this->incJobsCompleted();
 }
+
+DumbScheduler::DumbScheduler() {
+  // init the thread.
+  this->running = true;
+  this->cleanUpThread = std::thread([this] { this->cleanUpLoop(); });
+}
+
+void DumbScheduler::cleanUpLoop() {
+  while (this->running) {
+    CompletionEvent event;
+    if (CompletionQueue::getCompletionQueue().pop(event)) {
+      if (!this->running) {
+        break;
+      }
+      delete (event.jobLaunchInfo);
+      this->onJobCompletion(event.job, event.completionTime);
+      // delete the heap allocated launch info instance.
+    } else {
+      // pop returned false, means shutdown.
+      break;
+    }
+  }
+}
+
+DumbScheduler::~DumbScheduler() {
+  this->running = false;
+  CompletionQueue::getCompletionQueue().shutdown();
+  if (this->cleanUpThread.joinable()) {
+    this->cleanUpThread.join();
+  }
+}

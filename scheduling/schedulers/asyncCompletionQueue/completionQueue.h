@@ -28,6 +28,8 @@ private:
   std::mutex mtx;
   std::condition_variable cv;
   std::queue<CompletionEvent> jobCleanUpQueue;
+  // shutdown is requested when scheduler instance is deleted.
+  std::atomic<bool> shutdownRequest{false};
 
 public:
   void push(CompletionEvent ev);
@@ -35,6 +37,8 @@ public:
   bool pop(CompletionEvent &ev);
 
   static CompletionQueue &getCompletionQueue();
+
+  void shutdown();
 };
 
 #endif

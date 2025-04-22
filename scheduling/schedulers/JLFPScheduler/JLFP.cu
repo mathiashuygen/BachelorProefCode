@@ -30,7 +30,6 @@ void JLFP::dispatch() {
         // if there aren't enough TPCs available, have the job wait until enough
         // of them free up.
         if (DeviceInfo::getTotalTPCsOnDevice() - TPCsInUse < neededTPCs) {
-          std::cout << "waited for more tpcs(/2)\n";
           continue;
         }
         // else pop the job and launch it.
@@ -51,7 +50,6 @@ void JLFP::dispatch() {
         // if there are TPCs in use, the job has to wait for all the TPCs to
         // free up.
         if (TPCsInUse > 0) {
-          std::cout << "waited for more tpcs(> 0)\n";
           continue;
         }
         currJobQueue.pop();
@@ -80,9 +78,6 @@ void JLFP::dispatch() {
         setJobTPCMask(neededTPCs, currJob);
         currJob->execute();
         // std::cout << "launched a job\n";
-      } else {
-        std::cout << "waited for more tpcs\n";
-        continue;
       }
     }
     // pop the level from the queue.
@@ -91,7 +86,6 @@ void JLFP::dispatch() {
 }
 
 void JLFP::onJobCompletion(Job *job, float jobCompletionTime) {
-  std::cout << job->getMessage() << std::endl;
   // check if the job met its deadline.
   job->releaseMasks();
   if (!(job->getReleaseTime() + job->getAbsoluteDeadline() <
@@ -191,18 +185,26 @@ JLFP::JLFP() {
 }
 
 void JLFP::cleanUpLoop() {
-  while (running) {
+  while (this->running) {
     CompletionEvent event;
     if (CompletionQueue::getCompletionQueue().pop(event)) {
-
-      this->onJobCompletion(event.job, event.completionTime);
-      // delete the instance (it was heap allocated).
-    } else {
-      // pop returned false, means queue
-      // is empty
-      if (!running) {
-        break; // Exit loop if running is false
+      if (!this->running) {
+        break;
       }
+      delete (event.jobLaunchInfo);
+      this->onJobCompletion(event.job, event.completionTime);
+      // delete the heap allocated launch info instance.
+    } else {
+      // pop returned false, means shutdown.
+      break;
     }
+  }
+}
+
+JLFP::~JLFP() {
+  this->running = false;
+  CompletionQueue::getCompletionQueue().shutdown();
+  if (this->cleanUpThread.joinable()) {
+    this->cleanUpThread.join();
   }
 }

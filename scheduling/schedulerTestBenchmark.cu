@@ -105,9 +105,6 @@ void runBenchmark(BaseScheduler *scheduler, int numTasks, int threadsPerBlock,
 
     // Dispatch jobs according to the scheduler
     scheduler->dispatch();
-
-    // Small sleep to reduce CPU usage
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }
 
   // Collect and print results
