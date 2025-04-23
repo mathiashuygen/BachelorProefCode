@@ -5,7 +5,7 @@
 #ifndef JOB_H
 #define JOB_H
 
-#include "../../../commonLib/libsmctrl/libsmctrl.h"
+#include "libsmctrl.h"
 #include "../../common/deviceProps.h"
 #include "../../common/helpFunctions.h"
 #include "../jobObserver/jobObserver.h"
