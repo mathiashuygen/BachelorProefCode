@@ -11,7 +11,7 @@ Task::Task(int offset, int compute_time, int rel_deadline, int period,
       period(period), jobFactory(std::move(jobFactory)), id(id),
       beginTime(getCurrentTime()) {}
 
-bool Task::isJobReady() {
+bool Task::isJobReady() const {
   float currentTime = getCurrentTime();
   if (!firstJobReleased) {
     return currentTime - beginTime >= offset;

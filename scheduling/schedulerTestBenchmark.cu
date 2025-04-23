@@ -53,37 +53,10 @@ std::unique_ptr<BaseScheduler> createScheduler(const std::string &type,
 }
 
 // Function to run the benchmark
-void runBenchmark(BaseScheduler *scheduler, int numTasks, int threadsPerBlock,
-                  int blockCount) {
-  std::vector<Task> tasks;
-
-  // Create a mix of job types for the benchmark
-  for (int i = 0; i < numTasks; i++) {
-    if (i % 2 == 0) {
-      // BusyJob tasks
-      std::unique_ptr<JobFactoryBase> busyJobFactory =
-          JobFactory<BusyJob, int, int>::create(threadsPerBlock, blockCount);
-
-      int period = 5;
-      int deadline = 30 * (i + 1); // Stagger deadlines
-      int releaseTime = 5 * i;     // Stagger release times
-
-      tasks.push_back(Task(period, releaseTime, deadline, 10,
-                           std::move(busyJobFactory), i));
-    } else {
-      // PrintJob tasks
-      std::unique_ptr<JobFactoryBase> printJobFactory =
-          JobFactory<PrintJob, int, int>::create(threadsPerBlock, blockCount);
-
-      int period = 5;
-      int deadline = 20 * (i + 1); // Stagger deadlines
-      int releaseTime = 5 * i;     // Stagger release times
-
-      tasks.push_back(Task(period, releaseTime, deadline, 5,
-                           std::move(printJobFactory), i));
-    }
-  }
-
+void runBenchmark(
+    BaseScheduler *scheduler,
+    std::vector<Task>& tasks
+) {
   // Metrics to track
   int jobsCompleted = 0;
   int jobsMissedDeadline = 0;
@@ -131,11 +104,49 @@ void runBenchmark(BaseScheduler *scheduler, int numTasks, int threadsPerBlock,
   std::cout << "Throughput: " << throughput << " jobs/second" << std::endl;
 }
 
+std::vector<Task> get_task_system(
+    int numTasks,
+    int threadsPerBlock,
+    int blockCount
+) {
+    std::vector<Task> tasks;
+
+    // Create a mix of job types for the benchmark
+    for (int i = 0; i < numTasks; i++) {
+        if (i % 2 == 0) {
+            // BusyJob tasks
+            std::unique_ptr<JobFactoryBase> busyJobFactory =
+                    JobFactory<BusyJob, int, int>::create(threadsPerBlock, blockCount);
+
+            int period = 5;
+            int deadline = 30 * (i + 1); // Stagger deadlines
+            int releaseTime = 5 * i;     // Stagger release times
+
+            tasks.push_back(Task(period, releaseTime, deadline, 10,
+                                 std::move(busyJobFactory), i));
+        } else {
+            // PrintJob tasks
+            std::unique_ptr<JobFactoryBase> printJobFactory =
+                    JobFactory<PrintJob, int, int>::create(threadsPerBlock, blockCount);
+
+            int period = 5;
+            int deadline = 20 * (i + 1); // Stagger deadlines
+            int releaseTime = 5 * i;     // Stagger release times
+
+            tasks.push_back(Task(period, releaseTime, deadline, 5,
+                                 std::move(printJobFactory), i));
+        }
+    }
+
+    return tasks;
+}
+
 int main() {
-  std::string schedulerType = SCHEDULER_TYPE;
-  int threadsPerBlock = THREADS_PER_BLOCK;
-  int blockCount = BLOCK_COUNT;
-  int tpcSplitDenom = TPC_SPLIT_DENOM;
+  const std::string schedulerType = SCHEDULER_TYPE;
+  const int threadsPerBlock = THREADS_PER_BLOCK;
+  const int blockCount = BLOCK_COUNT;
+  const int tpcSplitDenom = TPC_SPLIT_DENOM;
+  const int numTasks = 5;
 
   std::cout << "Starting benchmark with " << schedulerType << " scheduler"
             << std::endl;
@@ -145,6 +156,8 @@ int main() {
             << std::endl;
   std::cout << "Configuration: " << tpcSplitDenom << " tpc split denominator, "
             << std::endl;
+  std::cout << "Configuration: " << numTasks << " tasks, "
+            << std::endl;
 
   // Create the scheduler based on the compile-time configuration
   auto scheduler = createScheduler(schedulerType, tpcSplitDenom);
@@ -152,8 +165,13 @@ int main() {
     return 1;
   }
 
+  auto tasks = get_task_system(numTasks, threadsPerBlock, blockCount);
+
   // Run the benchmark
-  runBenchmark(scheduler.get(), 5, threadsPerBlock, blockCount);
+  runBenchmark(
+      scheduler.get(),
+      tasks
+  );
 
   return 0;
 }

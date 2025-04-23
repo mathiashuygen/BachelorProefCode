@@ -27,7 +27,7 @@ private:
 public:
   Task(int offset, int compute_time, int rel_deadline, int period,
        std::unique_ptr<JobFactoryBase> jobFactory, int id);
-  bool isJobReady();
+  bool isJobReady() const;
   Job *releaseJob();
   int get_offset();
   int get_compute_time();
