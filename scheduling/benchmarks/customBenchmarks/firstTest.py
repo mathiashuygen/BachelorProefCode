@@ -42,6 +42,7 @@ class SchedulerBenchmark(Benchmark):
             self.platform = platform
 
         self._bench_src_path = pathlib.Path(src_dir)
+        self._build_dir = self._bench_src_path / "build-benchkit"
         self._libsmctrl_dir = libsmctrl_dir
         self._benchmark_file = benchmark_file
         self._scheduler_type = scheduler_type
@@ -73,55 +74,31 @@ class SchedulerBenchmark(Benchmark):
         tpc_denom: int,
         **kwargs,
     ) -> None:
-        # Create the results directory if it doesn't exist
-        self.platform.comm.makedirs(path=self._results_path, exist_ok=True)
+        build_dir = self._build_dir
+        self.platform.comm.makedirs(path=build_dir, exist_ok=True)
 
-        command = [
-            "nvcc",
-            "-o",
-            f"{self._results_path}/{self._scheduler_type}_benchmark",
-            f'-DSCHEDULER_TYPE=\\"{self._scheduler_type}\\"',
+        build_command = [
+            "cmake",
+            "-DCMAKE_BUILD_TYPE=Release",
+            f"-DSCHEDULER_TYPE={self._scheduler_type}",
             f"-DTHREADS_PER_BLOCK={threads_per_block}",
-            f"-DBLOCK_COUNT={block_count}",
-            f"-DBLOCK_COUNT={tpc_denom}",
-            "../../schedulerTestBenchmark.cu",
-            "../../tasks/task.cu",
-            "../../schedulers/schedulerBase/scheduler.cu",
-            "../../schedulers/JLFPScheduler/JLFP.cu",
-            "../../schedulers/dumbScheduler/dumbScheduler.cu",
-            "../../schedulers/FCFSScheduler/FCFSScheduler.cu",
-            "../../schedulers/asyncCompletionQueue/completionQueue.cu",
-            "../../jobs/kernels/busyKernel.cu",
-            "../../jobs/kernels/printKernel.cu",
-            "../../jobs/kernels/vectorAdd.cu",
-            "../../jobs/kernels/matrixMultiplication.cu",
-            "../../jobs/jobBase/job.cu",
-            "../../jobs/printJob/printJob.cu",
-            "../../jobs/busyJob/busyJob.cu",
-            "../../jobs/vectorAddJob/vectorAddJob.cu",
-            "../../jobs/matrixMultiplicationJob/matrixMultiplicationJob.cu",
-            "../../jobs/jobLaunchInformation/busyJobLaunchInformation.cu",
-            "../../jobs/jobLaunchInformation/printJobLaunchInformation.cu",
-            "../../jobs/jobLaunchInformation/vectorAddJobLaunchInformation.cu",
-            "../../jobs/jobLaunchInformation/matrixMultiplicationJobLaunchInformation.cu",
-            "../../common/helpFunctions.cu",
-            "../../common/deviceProps.cu",
-            "../../common/maskElement.cu",
-            f"-I{self._libsmctrl_dir}",
-            "-lsmctrl",
-            "-lcuda",
-            "-lcudart",
-            f"-L{self._libsmctrl_dir}",
+            f"-DTPC_SPLIT_DENOM={tpc_denom}",
+            f"-DLIBSMCTRL_DIR={self._libsmctrl_dir}",
+            f"{self.bench_src_path}",
         ]
 
         # Compile the benchmark with the specific scheduler
         self.platform.comm.shell(
-            command=command,
-            current_dir=str(self.bench_src_path),
+            command=build_command,
+            current_dir=build_dir,
             output_is_log=True,
         )
 
-        print(f"Built {self._scheduler_type} benchmark")
+        self.platform.comm.shell(
+            command=["make", "-j", f"{self.platform.nb_active_cpus()}"],
+            current_dir=build_dir,
+            output_is_log=True,
+        )
 
     def clean_bench(self) -> None:
         pass
@@ -129,7 +106,7 @@ class SchedulerBenchmark(Benchmark):
     def single_run(self, **kwargs) -> str:
         environment = self._preload_env(**kwargs)
 
-        run_command = [f"{self._results_path}/{self._scheduler_type}_benchmark"]
+        run_command = [f"./benchmark_{self._scheduler_type}"]
 
         wrapped_run_command, wrapped_environment = self._wrap_command(
             run_command=run_command,
@@ -140,7 +117,7 @@ class SchedulerBenchmark(Benchmark):
         output = self.run_bench_command(
             run_command=run_command,
             wrapped_run_command=wrapped_run_command,
-            current_dir=self.bench_src_path,
+            current_dir=self._build_dir,
             environment=environment,
             wrapped_environment=wrapped_environment,
             print_output=True,
@@ -222,7 +199,7 @@ def scheduler_campaign(
 
     for scheduler in schedulers:
         bench = SchedulerBenchmark(
-            src_dir=src_dir / "scheduling/benchmarks/customBenchmarks",
+            src_dir=src_dir / "scheduling",
             libsmctrl_dir=libsmctrl_dir,
             benchmark_file=benchmark_file,
             scheduler_type=scheduler,

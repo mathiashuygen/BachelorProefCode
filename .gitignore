@@ -21,3 +21,6 @@ build/
 
 #ignore benchmark results
 scheduling/benchmarks/customBenchmarks/results/
+
+# IDEs
+.idea/

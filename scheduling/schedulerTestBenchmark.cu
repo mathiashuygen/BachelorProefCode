@@ -141,6 +141,8 @@ int main() {
             << std::endl;
   std::cout << "Configuration: " << threadsPerBlock << " threads per block, "
             << std::endl;
+  std::cout << "Configuration: " << blockCount << " blocks (count), "
+            << std::endl;
   std::cout << "Configuration: " << tpcSplitDenom << " tpc split denominator, "
             << std::endl;
 
