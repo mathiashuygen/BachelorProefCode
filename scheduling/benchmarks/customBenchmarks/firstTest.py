@@ -53,7 +53,7 @@ class SchedulerBenchmark(Benchmark):
 
     @staticmethod
     def get_build_var_names() -> List[str]:
-        return ["threads_per_block", "block_count", "data_size"]
+        return ["threads_per_block", "block_count", "tpc_denom"]
 
     @staticmethod
     def get_run_var_names() -> List[str]:
@@ -70,7 +70,7 @@ class SchedulerBenchmark(Benchmark):
         self,
         threads_per_block: int,
         block_count: int,
-        data_size: int,
+        tpc_denom: int,
         **kwargs,
     ) -> None:
         # Create the results directory if it doesn't exist
@@ -83,7 +83,7 @@ class SchedulerBenchmark(Benchmark):
             f'-DSCHEDULER_TYPE=\\"{self._scheduler_type}\\"',
             f"-DTHREADS_PER_BLOCK={threads_per_block}",
             f"-DBLOCK_COUNT={block_count}",
-            f"-DDATA_SIZE={data_size}",
+            f"-DBLOCK_COUNT={tpc_denom}",
             "../../schedulerTestBenchmark.cu",
             "../../tasks/task.cu",
             "../../schedulers/schedulerBase/scheduler.cu",
@@ -167,6 +167,12 @@ class SchedulerBenchmark(Benchmark):
             if "Throughput:" in line:
                 throughput_str = line.split(":")[-1].strip()
                 results["throughput"] = float(throughput_str.split()[0])
+            if "Jobs missed deadline:" in line:
+                deadline_miss_str = line.split(":")[-1].strip()
+                results["deadline_misses"] = int(deadline_miss_str.split()[0])
+            if "Jobs completed:" in line:
+                jobs_completed_str = line.split(":")[-1].strip()
+                results["jobs_completed"] = int(jobs_completed_str.split()[0])
 
         return results
 
@@ -231,7 +237,7 @@ def scheduler_campaign(
             variables={
                 "threads_per_block": [32],
                 "block_count": [8],
-                "data_size": [1024],
+                "tpc_denom": [2, 4],
             },
             constants={"scheduler": scheduler},
             debug=False,
@@ -253,9 +259,6 @@ def main() -> None:
     suite = CampaignSuite(campaigns=campaigns)
     suite.print_durations()
     suite.run_suite()
-
-    # Generate a combined CSV file with all results
-    suite.generate_global_csv()
 
 
 if __name__ == "__main__":

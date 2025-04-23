@@ -31,15 +31,17 @@
 #ifndef BLOCK_COUNT
 #define BLOCK_COUNT 4 // Default block count
 #endif
-
-#ifndef DATA_SIZE
-#define DATA_SIZE 4096 // Default data size
+// example => if a job needs 4 tpcs, the denom will determine if it gets all of
+// them or less.
+#ifndef TPC_SPLIT_DENOM
+#define TPC_SPLIT_DENOM 1
 #endif
 
 // Function to create a scheduler based on type
-std::unique_ptr<BaseScheduler> createScheduler(const std::string &type) {
+std::unique_ptr<BaseScheduler> createScheduler(const std::string &type,
+                                               int tpcSplitDenom) {
   if (type == "JLFP") {
-    return std::make_unique<JLFP>();
+    return std::make_unique<JLFP>(tpcSplitDenom);
   } else if (type == "FCFS") {
     return std::make_unique<FCFSScheduler>();
   } else if (type == "dumbScheduler") {
@@ -52,7 +54,7 @@ std::unique_ptr<BaseScheduler> createScheduler(const std::string &type) {
 
 // Function to run the benchmark
 void runBenchmark(BaseScheduler *scheduler, int numTasks, int threadsPerBlock,
-                  int blockCount, int dataSize) {
+                  int blockCount) {
   std::vector<Task> tasks;
 
   // Create a mix of job types for the benchmark
@@ -123,7 +125,6 @@ void runBenchmark(BaseScheduler *scheduler, int numTasks, int threadsPerBlock,
   std::cout << "Scheduler: " << SCHEDULER_TYPE << std::endl;
   std::cout << "Threads Per Block: " << THREADS_PER_BLOCK << std::endl;
   std::cout << "Block Count: " << BLOCK_COUNT << std::endl;
-  std::cout << "Data Size: " << DATA_SIZE << std::endl;
   std::cout << "Execution time: " << totalTime << " seconds" << std::endl;
   std::cout << "Jobs completed: " << jobsCompleted << std::endl;
   std::cout << "Jobs missed deadline: " << jobsMissedDeadline << std::endl;
@@ -134,22 +135,23 @@ int main() {
   std::string schedulerType = SCHEDULER_TYPE;
   int threadsPerBlock = THREADS_PER_BLOCK;
   int blockCount = BLOCK_COUNT;
-  int dataSize = DATA_SIZE;
+  int tpcSplitDenom = TPC_SPLIT_DENOM;
 
   std::cout << "Starting benchmark with " << schedulerType << " scheduler"
             << std::endl;
   std::cout << "Configuration: " << threadsPerBlock << " threads per block, "
-            << blockCount << " blocks, " << dataSize << " data size"
+            << std::endl;
+  std::cout << "Configuration: " << tpcSplitDenom << " tpc split denominator, "
             << std::endl;
 
   // Create the scheduler based on the compile-time configuration
-  auto scheduler = createScheduler(schedulerType);
+  auto scheduler = createScheduler(schedulerType, tpcSplitDenom);
   if (!scheduler) {
     return 1;
   }
 
   // Run the benchmark
-  runBenchmark(scheduler.get(), 5, threadsPerBlock, blockCount, dataSize);
+  runBenchmark(scheduler.get(), 5, threadsPerBlock, blockCount);
 
   return 0;
 }

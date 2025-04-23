@@ -7,6 +7,7 @@ protected:
   int TPCsInUse = 0;
   int jobsCompleted = 0;
   int deadlineMisses = 0;
+  int TPC_denom = 1;
 
 public:
   virtual void dispatch() = 0;

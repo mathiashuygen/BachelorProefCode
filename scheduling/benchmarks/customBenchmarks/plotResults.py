@@ -1,223 +1,151 @@
-import os
-import sys
-import pandas as pd
+import json
 import matplotlib.pyplot as plt
-import seaborn as sns
+import pandas as pd
+import numpy as np
+import os
 import glob
-import re
+
+results_directory = "/home/muut/Documents/github/bachelorProefCode/scheduling/benchmarks/customBenchmarks/results/temp/"
 
 
-def clean_csv(input_file, output_file):
-    """Fix the CSV format by properly handling the raw_output field with newlines."""
-    with open(input_file, "r") as f:
-        content = f.read()
+def load_and_aggregate_results(dir_path):
+    """
+    Loads benchmark results from all JSON files in a directory,
+    aggregates them by scheduler, and calculates mean values.
 
-    # Extract header and data lines
-    lines = content.split("\n")
-    header = None
-    cleaned_lines = []
+    Args:
+        dir_path (str): The path to the directory containing JSON files.
 
-    for i, line in enumerate(lines):
-        if line.startswith("#"):
-            continue  # Skip comment lines
-        elif line.startswith("experiment_name;"):
-            header = line
-            cleaned_lines.append(line)
-        elif ";" in line:
-            # This is a data row start
-            # Extract values from this line and subsequent lines until we find metrics
-            current_line = line
-            j = i + 1
-            while j < len(lines) and not lines[j].startswith(";"):
-                current_line += "\\n" + lines[j]
-                j = j + 1
+    Returns:
+        pandas.DataFrame or None: An aggregated DataFrame with mean values
+                                   per scheduler, or None if an error occurs.
+    """
+    all_data = []
+    json_files = glob.glob(os.path.join(dir_path, "*.json"))  # Find all .json files
 
-            # Check if we found the metrics at the end
-            if j < len(lines) and lines[j].startswith(";"):
-                metrics = lines[j].strip()
-                # Combine everything properly
-                cleaned_line = current_line.replace("\n", "\\n") + metrics
-                cleaned_lines.append(cleaned_line)
-
-    # Write cleaned CSV
-    with open(output_file, "w") as f:
-        f.write("\n".join(cleaned_lines))
-
-    return output_file
-
-
-def extract_metrics_directly(input_file):
-    """Extract metrics directly from the raw file using regex."""
-    with open(input_file, "r") as f:
-        content = f.read()
-
-    # First get the header to know column names
-    match = re.search(r"^experiment_name.*?throughput", content, re.MULTILINE)
-    if not match:
-        print(f"Error: Could not find CSV header in {input_file}")
+    if not json_files:
+        print(f"Error: No JSON files found in directory: {dir_path}")
         return None
 
-    header = match.group(0).split(";")
+    print(f"Found {len(json_files)} JSON files. Processing...")
 
-    # Define patterns to extract values
-    patterns = {
-        "scheduler": r"Scheduler: (\w+)",
-        "threads_per_block": r"Threads Per Block: (\d+)",
-        "block_count": r"Block Count: (\d+)",
-        "data_size": r"Data Size: (\d+)",
-        "execution_time": r"Execution time: ([\d\.]+)",
-        "average_latency": r"Average latency: ([\d\.]+)",
-        "throughput": r"Throughput: ([\d\.]+)",
+    for file_path in json_files:
+        try:
+            with open(file_path, "r") as f:
+                data = json.load(f)
+                # Handle cases where a file might contain a single result dict
+                # or a list of results
+                if isinstance(data, dict):
+                    all_data.append(data)
+                elif isinstance(data, list):
+                    all_data.extend(data)
+                else:
+                    print(
+                        f"Warning: Skipping file {file_path} - unexpected data format."
+                    )
+        except FileNotFoundError:
+            print(f"Error: File not found at {file_path}")
+            continue  # Skip to the next file
+        except json.JSONDecodeError:
+            print(f"Error: Could not decode JSON from {file_path}")
+            continue  # Skip to the next file
+        except Exception as e:
+            print(f"An unexpected error occurred processing {file_path}: {e}")
+            continue  # Skip to the next file
+
+    if not all_data:
+        print("Error: No valid data could be loaded from the JSON files.")
+        return None
+
+    # Convert data to pandas DataFrame
+    df = pd.DataFrame(all_data)
+
+    # Check if required columns exist
+    required_columns = ["scheduler", "throughput", "jobs_completed", "deadline_misses"]
+    if not all(col in df.columns for col in required_columns):
+        missing = [col for col in required_columns if col not in df.columns]
+        print(
+            f"Error: Missing required columns: {', '.join(missing)}. Ensure all JSON files contain these fields."
+        )
+        return None
+
+    # Convert numeric columns to numeric type, coercing errors
+    numeric_cols = ["throughput", "jobs_completed", "deadline_misses"]
+    for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # Drop rows where conversion failed for any numeric column
+    df.dropna(subset=numeric_cols, inplace=True)
+
+    if df.empty:
+        print("Error: No valid numeric data found for plotting after handling errors.")
+        return None
+
+    # Group by scheduler and calculate mean values
+    # Use numpy's nanmean just in case, though dropna should handle NaNs
+    results = (
+        df.groupby("scheduler")
+        .agg(
+            avg_throughput=("throughput", np.mean),
+            avg_jobs_completed=("jobs_completed", np.mean),
+            avg_deadline_misses=("deadline_misses", np.mean),
+        )
+        .reset_index()
+    )
+
+    print("Aggregation complete.")
+    print(results)  # Print the aggregated data for verification
+    return results
+
+
+def plot_aggregated_results(aggregated_df):
+    """
+    Plots the aggregated benchmark results (throughput, jobs completed,
+    deadline misses) per scheduler.
+
+    Args:
+        aggregated_df (pandas.DataFrame): DataFrame with aggregated results.
+    """
+    if aggregated_df is None or aggregated_df.empty:
+        print("No data to plot.")
+        return
+
+    schedulers = aggregated_df["scheduler"]
+    metrics_to_plot = {
+        "Average Throughput": aggregated_df["avg_throughput"],
+        "Average Jobs Completed": aggregated_df["avg_jobs_completed"],
+        "Average Deadline Misses": aggregated_df["avg_deadline_misses"],
     }
 
-    data = []
+    num_plots = len(metrics_to_plot)
+    fig, axes = plt.subplots(num_plots, 1, figsize=(10, 5 * num_plots), sharex=True)
 
-    # Find each benchmark run
-    run_pattern = r"Starting benchmark.*?jobs/second"
-    for i, run_match in enumerate(re.finditer(run_pattern, content, re.DOTALL)):
-        run_text = run_match.group(0)
-        row = {}
+    # Ensure axes is always iterable, even if num_plots is 1
+    if num_plots == 1:
+        axes = [axes]
 
-        # Extract each metric
-        for key, pattern in patterns.items():
-            match = re.search(pattern, run_text)
-            if match:
-                try:
-                    row[key] = (
-                        float(match.group(1))
-                        if key not in ["scheduler"]
-                        else match.group(1)
-                    )
-                except ValueError:
-                    row[key] = match.group(1)
+    colors = ["skyblue", "lightcoral", "lightgreen"]  # Colors for each plot
 
-        # Add rep number (run index)
-        row["rep"] = i + 1
-        data.append(row)
+    for i, (title, data) in enumerate(metrics_to_plot.items()):
+        ax = axes[i]
+        ax.bar(schedulers, data, color=colors[i % len(colors)])
+        ax.set_ylabel(title)
+        ax.set_title(f"{title} by Scheduler")
+        ax.grid(axis="y", linestyle="--")
 
-    # Convert to DataFrame
-    df = pd.DataFrame(data)
-    return df
+    # Set common x-label and rotate ticks on the last plot
+    axes[-1].set_xlabel("Scheduler")
+    plt.xticks(rotation=45, ha="right")
+
+    plt.suptitle(
+        "Benchmark Comparison Across Schedulers", fontsize=16, y=1.02
+    )  # Overall title
+    plt.tight_layout(rect=[0, 0.03, 1, 0.98])  # Adjust layout to prevent title overlap
+    plt.savefig("aggregrate.png")
 
 
-def plot_benchmark_results(file_path=None):
-    """Plot benchmark results from CSV files."""
-    # Determine if we're processing a directory or specific file(s)
-    if file_path is None:
-        directory = os.getcwd()
-        csv_files = glob.glob(f"{directory}/*.csv")
-        if not csv_files:
-            print(f"No CSV files found in {directory}")
-            return
-    elif os.path.isdir(file_path):
-        directory = file_path
-        csv_files = glob.glob(f"{file_path}/*.csv")
-        if not csv_files:
-            print(f"No CSV files found in {file_path}")
-            return
-    elif os.path.isfile(file_path) and file_path.endswith(".csv"):
-        directory = os.path.dirname(file_path)
-        csv_files = [file_path]
-    else:
-        print(f"Invalid path: {file_path}")
-        return
-
-    print(f"\nProcessing {len(csv_files)} CSV file(s)")
-
-    # Read CSV files using direct extraction
-    dfs = []
-    for file in csv_files:
-        try:
-            print(f"Processing {os.path.basename(file)}")
-            # Extract metrics directly from file
-            df = extract_metrics_directly(file)
-
-            if df is not None and not df.empty:
-                dfs.append(df)
-                print(f"Successfully read {len(df)} rows from {os.path.basename(file)}")
-            else:
-                print(f"No valid data extracted from {os.path.basename(file)}")
-        except Exception as e:
-            print(f"Error processing {os.path.basename(file)}: {e}")
-
-    if not dfs:
-        print("No valid data found in CSV files.")
-        return
-
-    # Combine all dataframes
-    combined_df = pd.concat(dfs, ignore_index=True)
-    print(f"Combined data: {len(combined_df)} rows")
-
-    # Print available columns for plotting
-    print("\nAvailable columns for plotting:")
-    for col in combined_df.columns:
-        print(f"- {col}")
-
-    # Create plots directory
-    plots_dir = os.path.join(directory, "plots")
-    os.makedirs(plots_dir, exist_ok=True)
-
-    # Check which columns are available for plotting
-    metric_columns = []
-    for col in ["execution_time", "average_latency", "throughput"]:
-        if col in combined_df.columns:
-            metric_columns.append(col)
-
-    x_columns = []
-    for col in ["threads_per_block", "block_count", "data_size"]:
-        if col in combined_df.columns:
-            x_columns.append(col)
-
-    # Plot bar charts for metrics by scheduler
-    plt.figure(figsize=(12, 8))
-    ax = sns.barplot(data=combined_df, x="scheduler", y="execution_time", errorbar=None)
-    plt.title("Execution Time by Scheduler")
-    plt.grid(True, linestyle="--", alpha=0.7)
-    plt.tight_layout()
-    plt.savefig(os.path.join(plots_dir, "execution_time_by_scheduler.png"))
-    plt.close()
-    print(f"Created plot: execution_time_by_scheduler.png")
-
-    plt.figure(figsize=(12, 8))
-    ax = sns.barplot(data=combined_df, x="scheduler", y="throughput", errorbar=None)
-    plt.title("Throughput by Scheduler")
-    plt.grid(True, linestyle="--", alpha=0.7)
-    plt.tight_layout()
-    plt.savefig(os.path.join(plots_dir, "throughput_by_scheduler.png"))
-    plt.close()
-    print(f"Created plot: throughput_by_scheduler.png")
-
-    # Only plot line charts if we have multiple configurations
-    if len(combined_df[x_columns[0]].unique()) > 1:
-        for x_col in x_columns:
-            for y_col in metric_columns:
-                plt.figure(figsize=(12, 8))
-                sns.lineplot(
-                    data=combined_df, x=x_col, y=y_col, hue="scheduler", markers=True
-                )
-                plt.title(
-                    f"{y_col.replace('_', ' ').title()} vs {x_col.replace('_', ' ').title()}"
-                )
-                plt.grid(True, linestyle="--", alpha=0.7)
-                plt.legend(
-                    title="Scheduler", bbox_to_anchor=(1.05, 1), loc="upper left"
-                )
-                plt.xlabel(x_col.replace("_", " ").title())
-                plt.ylabel(y_col.replace("_", " ").title())
-                plt.tight_layout()
-                plt.savefig(os.path.join(plots_dir, f"{y_col}_vs_{x_col}.png"))
-                plt.close()
-                print(f"Created plot: {y_col}_vs_{x_col}.png")
-    else:
-        print("\nNote: Only one configuration found. Not creating line plots.")
-
-    # Inform user where plots are saved
-    print(f"\nPlots saved to: {plots_dir}")
-
-
+# --- Main execution ---
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        path = sys.argv[1]
-        plot_benchmark_results(path)
-    else:
-        plot_benchmark_results()
+    aggregated_results = load_and_aggregate_results(results_directory)
+    if aggregated_results is not None:
+        plot_aggregated_results(aggregated_results)

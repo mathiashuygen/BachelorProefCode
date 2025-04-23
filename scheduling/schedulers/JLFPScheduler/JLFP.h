@@ -27,6 +27,10 @@ private:
   // loop method that loops inside the thread to clean up all the jobs.
   void cleanUpLoop();
 
+  // divides the amount of TPCS a job needs when assigning a mask. Used for
+  // benchmarks.
+  int TPC_denom = 1;
+
 public:
   void onJobCompletion(Job *job, float jobCompletionTime) override;
   void dispatch() override;
@@ -35,7 +39,7 @@ public:
   void displayQueueJobs();
 
   // added constructor to overwrite running boolean.
-  JLFP();
+  JLFP(int TPC_denom);
   ~JLFP() override;
 };
 

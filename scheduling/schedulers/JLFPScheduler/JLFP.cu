@@ -19,14 +19,15 @@ void JLFP::dispatch() {
     while (!currJobQueue.empty()) {
       int TPCsInUse = DeviceInfo::getDeviceProps()->TPCsInUse();
       Job *currJob = currJobQueue.front();
-      // case where a job needs more TPCs than there are on the device, give i
+      // case where a job needs more TPCs than there are on the device, give it
       // 1/2 of the TPCs.
       if (currJob->getNeededTPCs() >
               DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() &&
           currJob->getNeededTPCs() <
               2 * DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
         int neededTPCs =
-            DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() / 2;
+            ceil((float)DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() /
+                 (float)(2 * this->TPC_denom));
         // if there aren't enough TPCs available, have the job wait until enough
         // of them free up.
         if (DeviceInfo::getTotalTPCsOnDevice() - TPCsInUse < neededTPCs) {
@@ -46,7 +47,9 @@ void JLFP::dispatch() {
       else if (currJob->getNeededTPCs() >=
                2 * DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
         // assign it all the TPCs.
-        int neededTPCs = DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice();
+        int neededTPCs =
+            ceil((float)DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() /
+                 (float)this->TPC_denom);
         // if there are TPCs in use, the job has to wait for all the TPCs to
         // free up.
         if (TPCsInUse > 0) {
@@ -69,7 +72,8 @@ void JLFP::dispatch() {
       else if (currJob->getNeededTPCs() + TPCsInUse <=
                DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
         currJobQueue.pop();
-        int neededTPCs = currJob->getNeededTPCs();
+        int neededTPCs =
+            ceil((float)currJob->getNeededTPCs() / (float)this->TPC_denom);
         // set the observer. Used to notify the scheduler of the job's
         // completion. When a job is finished with executing its kernel, the job
         // notifies to scheduler which will perform a clean-up.
@@ -178,7 +182,8 @@ void JLFP::displayQueueJobs() {
   }
 }
 
-JLFP::JLFP() {
+JLFP::JLFP(int TPC_denom) {
+  this->TPC_denom = TPC_denom;
   // init the thread.
   this->running = true;
   this->cleanUpThread = std::thread([this] { this->cleanUpLoop(); });
