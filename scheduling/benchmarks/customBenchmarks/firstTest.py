@@ -7,7 +7,7 @@ from benchkit.benchmark import Benchmark
 from benchkit.platforms import Platform, get_current_platform
 from benchkit.campaign import CampaignCartesianProduct, CampaignSuite
 from benchkit.utils.dir import gitmainrootdir
-from scheduling.benchmarks.benchmarkTool.examples.gpus.kit.gpus import (
+from gpus import (
     get_gpu_runner,
     get_gpu_docker_platform_from,
     get_gpu_builder,
