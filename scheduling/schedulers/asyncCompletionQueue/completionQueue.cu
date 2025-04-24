@@ -1,6 +1,15 @@
 #include "completionQueue.h"
 #include <mutex>
 
+size_t CompletionQueue::size() {
+    size_t result = 0;
+    {
+        std::lock_guard lk(mtx);
+        result = jobCleanUpQueue.size();
+    }
+    return result;
+}
+
 void CompletionQueue::push(CompletionEvent event) {
   // lock the queue for the push.
   {

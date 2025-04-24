@@ -32,6 +32,8 @@ private:
   std::atomic<bool> shutdownRequest{false};
 
 public:
+  size_t size();
+
   void push(CompletionEvent ev);
 
   bool pop(CompletionEvent &ev);

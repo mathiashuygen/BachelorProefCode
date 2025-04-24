@@ -24,13 +24,6 @@ Job *Task::releaseJob() {
   if (!firstJobReleased) {
     firstJobReleased = true;
   }
-  // get a random absolute deadline.
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_real_distribution<float> realDist(1.0, this->rel_deadline);
-
-  // get a random absolute deadline for the job.
-  float absoluteDeadline = realDist(gen);
 
   // create a new job using the factory.
   this->activeJobs.push_back(this->jobFactory->createJob());
@@ -39,10 +32,12 @@ Job *Task::releaseJob() {
 
   job->setParentTask(this);
 
-  float currentTime = getCurrentTime();
+  const auto currentTime = (float) getCurrentTime();
+  const auto rel_deadline = this->rel_deadline;
+  const auto abs_deadline = currentTime + rel_deadline;
   // set the job's absolute deadline.
-  job->setAbsoluteDeadline(10);
-  // set the most recent job releae time. This is needed because tasks release
+  job->setAbsoluteDeadline(abs_deadline);
+  // set the most recent job release time. This is needed because tasks release
   // jobs periodically. The previous job's release time is used to check if
   // enough time has passed for a new job to be ready.
   this->previousJobRelease = currentTime;
