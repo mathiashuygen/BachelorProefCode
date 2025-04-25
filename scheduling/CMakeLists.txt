@@ -51,16 +51,26 @@ set(SOURCES
     common/helpFunctions.cu
     common/deviceProps.cu
     common/maskElement.cu
+    executive/scheduling.cu
+    executive/runbenchmark.cu
 )
 
-# Define executable
 add_executable(
     benchmark_${SCHEDULER_TYPE}
     ${SOURCES} schedulerTestBenchmark.cu
 )
-
-# Link CUDA and smctrl
 target_link_libraries(benchmark_${SCHEDULER_TYPE}
+    PRIVATE
+        smctrl
+        cuda
+        cudart
+)
+
+add_executable(
+    evaluation
+    ${SOURCES} evaluation.cu
+)
+target_link_libraries(evaluation
     PRIVATE
         smctrl
         cuda
