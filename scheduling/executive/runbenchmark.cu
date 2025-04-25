@@ -10,7 +10,6 @@ void runBenchmark(
     // Metrics to track
     int jobsCompleted = 0;
     int jobsMissedDeadline = 0;
-    float totalExecutionTime = 0.0f;
     std::vector<float> executionTimes;
 
     // Start timing
@@ -51,4 +50,10 @@ void runBenchmark(
     std::cout << "Jobs completed: " << jobsCompleted << std::endl;
     std::cout << "Jobs missed deadline: " << jobsMissedDeadline << std::endl;
     std::cout << "Throughput: " << throughput << " jobs/second" << std::endl;
+
+    double sum = 0;
+    for (auto &task : tasks) {
+        sum += ((double) task.get_compute_time()) / task.get_period();
+    }
+    std::cout << "Total task system utilization: " << sum << std::endl;
 }

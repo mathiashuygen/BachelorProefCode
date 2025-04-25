@@ -47,6 +47,7 @@ std::vector<Task> parseTaskSetFromFile(const std::string &filepath) {
     return {};
   }
 
+  // First token is number of tasks
   const int taskCount = std::stoi(tokens[0]);
   const size_t expectedTokens = 1 + taskCount * 7;
 
@@ -59,25 +60,27 @@ std::vector<Task> parseTaskSetFromFile(const std::string &filepath) {
   std::vector<Task> tasks;
   size_t idx = 1;
   for (int i = 0; i < taskCount; ++i) {
-    std::string type = tokens[idx++];
-    int offset = std::stoi(tokens[idx++]);
-    int wcet = std::stoi(tokens[idx++]);
-    int deadline = std::stoi(tokens[idx++]);
-    int period = std::stoi(tokens[idx++]);
-    int threadsPerBlock = std::stoi(tokens[idx++]);
-    int blockCount = std::stoi(tokens[idx++]);
+    const std::string type = tokens[idx++];
+    const int offset = std::stoi(tokens[idx++]);
+    const int wcet = std::stoi(tokens[idx++]);
+    const int deadline = std::stoi(tokens[idx++]);
+    const int period = std::stoi(tokens[idx++]);
+    const int threadsPerBlock = std::stoi(tokens[idx++]);
+    const int blockCount = std::stoi(tokens[idx++]);
 
     std::unique_ptr<JobFactoryBase> factory;
 
     if (type == "busy") {
-      factory =
-          JobFactory<BusyJob, int, int>::create(threadsPerBlock, blockCount);
+        factory = JobFactory<BusyJob, int, int>::create(threadsPerBlock, blockCount);
     } else if (type == "print") {
-      factory =
-          JobFactory<PrintJob, int, int>::create(threadsPerBlock, blockCount);
+        factory = JobFactory<PrintJob, int, int>::create(threadsPerBlock, blockCount);
+    } else if (type == "vecadd") {
+        factory = JobFactory<VectorAddJob, int, int>::create(threadsPerBlock, blockCount);
+    } else if (type == "matmul") {
+        factory = JobFactory<MatrixMultiplicationJob, int, int>::create(threadsPerBlock, blockCount);
     } else {
-      std::cerr << "Unknown job type: " << type << std::endl;
-      return {};
+        std::cerr << "Unknown job type: " << type << std::endl;
+        return {};
     }
 
     tasks.emplace_back(offset, wcet, deadline, period, std::move(factory), i);
@@ -89,10 +92,9 @@ std::vector<Task> parseTaskSetFromFile(const std::string &filepath) {
 int main(int argc, char *argv[]) {
   auto args = parseArgs(argc, argv);
 
-  const std::string schedulerType =
-      args.count("scheduler") ? args["scheduler"] : "JLFP";
-  const std::string taskFilePath =
-      args.count("task-file") ? args["task-file"] : "";
+  const std::string schedulerType = args.count("scheduler") ? args["scheduler"] : "JLFP";
+  const std::string taskFilePath = args.count("task-file") ? args["task-file"] : "";
+  const std::string durationSecondsStr = args.count("duration-seconds") ? args["duration-seconds"] : "5";
 
   const int tpcSplitDenom = TPC_SPLIT_DENOM;
   // subset when job can't get the amount of TPCs it "requires".
@@ -113,7 +115,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  runBenchmark(scheduler.get(), tasks, 5);
+  int durationSeconds = std::stoi(durationSecondsStr);
+  runBenchmark(scheduler.get(), tasks, durationSeconds);
 
   return 0;
 }
