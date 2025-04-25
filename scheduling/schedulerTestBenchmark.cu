@@ -118,23 +118,23 @@ std::vector<Task> get_task_system(
             std::unique_ptr<JobFactoryBase> busyJobFactory =
                     JobFactory<BusyJob, int, int>::create(threadsPerBlock, blockCount);
 
-            int period = 5;
-            int deadline = 30 * (i + 1); // Stagger deadlines
-            int releaseTime = 5 * i;     // Stagger release times
+            const int offset = 0;     // Stagger release times
+            const int wcet = 20;
+            const int deadline = 10;//;30 * (i + 1); // Stagger deadlines
+            const int period = 40;
 
-            tasks.push_back(Task(period, releaseTime, deadline, 10,
-                                 std::move(busyJobFactory), i));
+            tasks.push_back(Task(offset, wcet, deadline, period, std::move(busyJobFactory), i));
         } else {
             // PrintJob tasks
             std::unique_ptr<JobFactoryBase> printJobFactory =
                     JobFactory<PrintJob, int, int>::create(threadsPerBlock, blockCount);
 
-            int period = 5;
-            int deadline = 20 * (i + 1); // Stagger deadlines
-            int releaseTime = 5 * i;     // Stagger release times
+            const int offset = 0;     // Stagger release times
+            const int wcet = 20;
+            const int deadline = 30 * (i + 1); // Stagger deadlines
+            const int period = 40;
 
-            tasks.push_back(Task(period, releaseTime, deadline, 5,
-                                 std::move(printJobFactory), i));
+            tasks.push_back(Task(offset, wcet, deadline, period, std::move(printJobFactory), i));
         }
     }
 

@@ -21,12 +21,11 @@ void JLFP::dispatch() {
       Job *currJob = currJobQueue.front();
       // case where a job needs more TPCs than there are on the device, give it
       // 1/2 of the TPCs.
-      if (currJob->getNeededTPCs() >
-              DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() &&
-          currJob->getNeededTPCs() <
-              2 * DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
+      const int N = currJob->getNeededTPCs();
+      const int T = DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice();
+      if (T < N && N < (2 * T)) {
         int neededTPCs =
-            ceil((float)DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() /
+            ceil((float)T /
                  (float)(2 * this->TPC_denom));
         // if there aren't enough TPCs available, have the job wait until enough
         // of them free up.
@@ -44,11 +43,10 @@ void JLFP::dispatch() {
       }
       // case where the jobs needs more than twice the amount of TPCs on the
       // device, give it all of them to make sure it finishes quickly.
-      else if (currJob->getNeededTPCs() >=
-               2 * DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
+      else if (2 * T <= N) {
         // assign it all the TPCs.
         int neededTPCs =
-            ceil((float)DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice() /
+            ceil((float)T /
                  (float)this->TPC_denom);
         // if there are TPCs in use, the job has to wait for all the TPCs to
         // free up.
@@ -69,11 +67,9 @@ void JLFP::dispatch() {
        even though all jobs in this inner queue have the same deadline
        priority.
       */
-      else if (currJob->getNeededTPCs() + TPCsInUse <=
-               DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice()) {
+      else if (N + TPCsInUse <= T) {
         currJobQueue.pop();
-        int neededTPCs =
-            ceil((float)currJob->getNeededTPCs() / (float)this->TPC_denom);
+        int neededTPCs = ceil((float)N / (float)this->TPC_denom);
         // set the observer. Used to notify the scheduler of the job's
         // completion. When a job is finished with executing its kernel, the job
         // notifies to scheduler which will perform a clean-up.

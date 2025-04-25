@@ -1,9 +1,9 @@
 #include "../../tasks/task.h"
 #include "job.h"
 
-void Job::setMaximumExecutionTime(float time) { this->releaseTime = time; }
+void Job::setMaximumExecutionTime(float time) { this->maximalExecutionTime = time; }
 
-void Job::setAbsoluteDeadline(float time) { this->maximalExecutionTime = time; }
+void Job::setAbsoluteDeadline(float time) { this->absoluteDeadline = time; }
 
 void Job::setReleaseTime(float time) { this->releaseTime = time; }
 
