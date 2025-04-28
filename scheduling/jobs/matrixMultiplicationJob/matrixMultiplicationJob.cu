@@ -1,4 +1,5 @@
 #include "matrixMultiplicationJob.h"
+#include <cstddef>
 
 void CUDART_CB MatrixMultiplicationJob::matrixMulKernelCallback(
     cudaStream_t stream, cudaError_t status, void *data) {
@@ -39,7 +40,7 @@ void MatrixMultiplicationJob::execute() {
   }
 
   // fill up two arrays with values.
-  for (int i = 0; i < this->nrOfElements; i++) {
+  for (size_t i = 0; i < this->nrOfElements; i++) {
 
     A[i] = realDist(gen);
     B[i] = realDist(gen);
@@ -64,18 +65,19 @@ MatrixMultiplicationJob::MatrixMultiplicationJob(int threadsPerBlock,
   this->threadsPerBlock = threadsPerBlock;
   this->matrixDim = matrixDim;
 
-  this->nrOfElements = this->matrixDim * this->matrixDim * sizeof(float);
+  this->nrOfElements = this->matrixDim * this->matrixDim;
+  this->nrOfBytes = nrOfElements * sizeof(float);
   // kernel launch config.
   // matrices => 2D arrays => matrixDim * matrixDim.
-  cudaMalloc(&d_A, this->nrOfElements);
-  cudaMalloc(&d_B, this->nrOfElements);
-  cudaMalloc(&d_C, this->nrOfElements);
+  cudaMalloc(&d_A, this->nrOfBytes);
+  cudaMalloc(&d_B, this->nrOfBytes);
+  cudaMalloc(&d_C, this->nrOfBytes);
 
   cudaStreamCreate(&kernelStream);
 
-  cudaHostAlloc((void **)&A, this->nrOfElements, cudaHostAllocDefault);
-  cudaHostAlloc((void **)&B, this->nrOfElements, cudaHostAllocDefault);
-  cudaHostAlloc((void **)&C, this->nrOfElements, cudaHostAllocDefault);
+  cudaHostAlloc((void **)&A, this->nrOfBytes, cudaHostAllocDefault);
+  cudaHostAlloc((void **)&B, this->nrOfBytes, cudaHostAllocDefault);
+  cudaHostAlloc((void **)&C, this->nrOfBytes, cudaHostAllocDefault);
 
   // in this case the total amount of threads is the same as the size of the
   // matrix because each thread will calculate one row and column

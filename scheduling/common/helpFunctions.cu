@@ -6,6 +6,7 @@ void sleep(int miliSeconds) {
 
 double getCurrentTime() {
   using namespace std::chrono;
-  return duration_cast<duration<double>>(steady_clock::now().time_since_epoch())
+  return duration_cast<duration<double, std::milli>>(
+             steady_clock::now().time_since_epoch())
       .count();
 }

@@ -13,7 +13,11 @@ Task::Task(int offset, int compute_time, int rel_deadline, int period,
 
 bool Task::isJobReady() const {
   float currentTime = getCurrentTime();
-  if (!firstJobReleased) {
+  // if the task's execution time has elapsed it should not launch any more
+  // jobs.
+  if (currentTime - beginTime > this->compute_time) {
+    return false;
+  } else if (!firstJobReleased) {
     return currentTime - beginTime >= offset;
   } else {
     return currentTime - previousJobRelease >= period;
@@ -32,11 +36,12 @@ Job *Task::releaseJob() {
 
   job->setParentTask(this);
 
-  const auto currentTime = (float) getCurrentTime();
+  const auto currentTime = (float)getCurrentTime();
   const auto rel_deadline = this->rel_deadline;
   const auto abs_deadline = currentTime + rel_deadline;
   // set the job's absolute deadline.
   job->setAbsoluteDeadline(abs_deadline);
+  job->setReleaseTime(currentTime);
   // set the most recent job release time. This is needed because tasks release
   // jobs periodically. The previous job's release time is used to check if
   // enough time has passed for a new job to be ready.
@@ -68,3 +73,6 @@ void Task::cleanUpJob(Job *job) {
     this->activeJobs.erase(iterator);
   }
 }
+
+// when a task exceeds its execution time it should be destructed. it could be
+// the case a task needs to be destroyed while a job is still active.

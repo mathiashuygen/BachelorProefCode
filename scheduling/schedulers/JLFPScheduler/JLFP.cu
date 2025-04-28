@@ -24,9 +24,7 @@ void JLFP::dispatch() {
       const int N = currJob->getNeededTPCs();
       const int T = DeviceInfo::getDeviceProps()->getTotalTPCsOnDevice();
       if (T < N && N < (2 * T)) {
-        int neededTPCs =
-            ceil((float)T /
-                 (float)(2 * this->TPC_denom));
+        int neededTPCs = ceil((float)T / (float)(2 * this->TPC_denom));
         // if there aren't enough TPCs available, have the job wait until enough
         // of them free up.
         if (DeviceInfo::getTotalTPCsOnDevice() - TPCsInUse < neededTPCs) {
@@ -45,9 +43,7 @@ void JLFP::dispatch() {
       // device, give it all of them to make sure it finishes quickly.
       else if (2 * T <= N) {
         // assign it all the TPCs.
-        int neededTPCs =
-            ceil((float)T /
-                 (float)this->TPC_denom);
+        int neededTPCs = ceil((float)T / (float)this->TPC_denom);
         // if there are TPCs in use, the job has to wait for all the TPCs to
         // free up.
         if (TPCsInUse > 0) {
@@ -88,9 +84,14 @@ void JLFP::dispatch() {
 void JLFP::onJobCompletion(Job *job, float jobCompletionTime) {
   // check if the job met its deadline.
   job->releaseMasks();
-  if (!(job->getReleaseTime() + job->getAbsoluteDeadline() <
-        jobCompletionTime)) {
+  std::cout << "job completion time = " << jobCompletionTime << std::endl;
+  std::cout << "job absolute deadline = " << job->getAbsoluteDeadline()
+            << std::endl;
+  if (jobCompletionTime > job->getAbsoluteDeadline()) {
+    std::cout << "deadline miss" << std::endl;
     this->incDeadlineMisses();
+  } else {
+    std::cout << "job finished before its absolute deadline" << std::endl;
   }
   this->incJobsCompleted();
   // makes sure the job is cleaned up by thet task.

@@ -26,6 +26,7 @@ private:
   float *C = nullptr;
   cudaStream_t kernelStream;
   size_t nrOfElements;
+  size_t nrOfBytes;
   dim3 blocks;
 
 public:
