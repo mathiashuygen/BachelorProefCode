@@ -13,6 +13,8 @@ JLFP::jobQueue JLFP::createNewJobQueue(Job *job) {
 }
 
 void JLFP::dispatch() {
+  // vector of skipped jobs = jobs that could not be scheduled.
+  std::vector<Job *> skippedJobs;
   while (!priorityQueue.empty()) {
     // loop over the queues in a decreasing priority order.
     std::queue<Job *> currJobQueue = priorityQueue.back().jobs;
@@ -52,6 +54,7 @@ void JLFP::dispatch() {
         currJobQueue.pop();
         currJob->setJobObserver(this);
         setJobTPCMask(neededTPCs, currJob);
+
         currJob->execute();
         // std::cout << "launched a job that needs more than twice the amount of
         // "
@@ -84,9 +87,20 @@ void JLFP::dispatch() {
         setJobTPCMask(neededTPCs, currJob);
         currJob->execute();
       }
+      // if the job is not schedulable, skip it and add it back to the queue at
+      // the end of the method.
+      else {
+        skippedJobs.push_back(currJob);
+        currJobQueue.pop();
+      }
     }
     // pop the level from the queue.
     priorityQueue.pop_back();
+    // add the skipped jobs back to the queue.
+    for (Job *job : skippedJobs) {
+      std::cout << "added skipped job back" << std::endl;
+      this->addJob(job);
+    }
   }
 }
 

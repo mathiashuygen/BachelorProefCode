@@ -15,9 +15,7 @@ bool Task::isJobReady() const {
   float currentTime = getCurrentTime();
   // if the task's execution time has elapsed it should not launch any more
   // jobs.
-  if (currentTime - beginTime > this->compute_time) {
-    return false;
-  } else if (!firstJobReleased) {
+  if (!firstJobReleased) {
     return currentTime - beginTime >= offset;
   } else {
     return currentTime - previousJobRelease >= period;
@@ -73,6 +71,3 @@ void Task::cleanUpJob(Job *job) {
     this->activeJobs.erase(iterator);
   }
 }
-
-// when a task exceeds its execution time it should be destructed. it could be
-// the case a task needs to be destroyed while a job is still active.

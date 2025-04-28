@@ -32,7 +32,7 @@ int main() {
   std::unique_ptr<JobFactoryBase> vectorAddJobFactory2 =
       JobFactory<VectorAddJob, int, int>::create(512, 100000);
   std::unique_ptr<JobFactoryBase> matrixMulFactory =
-      JobFactory<MatrixMultiplicationJob, int, int>::create(512, 4000);
+      JobFactory<MatrixMultiplicationJob, int, int>::create(512, 40);
 
   //  tasks.push_back(Task(10, 10, 60, 5, std::move(busyJobFactory), 2));
   // tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory), 1));

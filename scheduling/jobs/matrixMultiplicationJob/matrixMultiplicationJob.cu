@@ -1,5 +1,6 @@
 #include "matrixMultiplicationJob.h"
 #include <cstddef>
+#include <string>
 
 void CUDART_CB MatrixMultiplicationJob::matrixMulKernelCallback(
     cudaStream_t stream, cudaError_t status, void *data) {
@@ -103,6 +104,8 @@ std::string MatrixMultiplicationJob::getMessage() {
 }
 
 MatrixMultiplicationJob::~MatrixMultiplicationJob() {
+  std::string message = this->getMessage();
+  std::cout << message;
   cudaStreamSynchronize(this->kernelStream);
 
   cudaStreamDestroy(this->kernelStream);
