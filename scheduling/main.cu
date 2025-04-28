@@ -47,7 +47,7 @@ int main() {
   // tasks.push_back(Task(10, 10, 20, 5, std::move(busyJobFactory2), 1));
   tasks.push_back(Task(100, 10000, 2, 1000, std::move(matrixMulFactory), 1));
 
-  JLFP scheduler1(1);
+  JLFP scheduler1(1, 1);
   DumbScheduler scheduler2;
   FCFSScheduler scheduler3;
 

@@ -29,7 +29,8 @@ private:
 
   // divides the amount of TPCS a job needs when assigning a mask. Used for
   // benchmarks.
-  int TPC_denom = 1;
+  int TPC_denom;
+  float TPC_subset;
 
 public:
   void onJobCompletion(Job *job, float jobCompletionTime) override;
@@ -39,7 +40,7 @@ public:
   void displayQueueJobs();
 
   // added constructor to overwrite running boolean.
-  JLFP(int TPC_denom);
+  JLFP(int TPC_denom, float TPC_subset);
   ~JLFP() override;
 };
 

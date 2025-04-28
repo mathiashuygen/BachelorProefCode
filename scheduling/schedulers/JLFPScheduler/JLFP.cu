@@ -75,6 +75,15 @@ void JLFP::dispatch() {
         currJob->execute();
         // std::cout << "launched a job\n";
       }
+      // what if there aren't enough TPCs available that the job requests but
+      // you still launch the job on less TPCs => mouldable job.
+      else if (TPCsInUse < N && TPCsInUse > 0) {
+        int neededTPCs = ceil(TPCsInUse * this->TPC_subset);
+
+        currJob->setJobObserver(this);
+        setJobTPCMask(neededTPCs, currJob);
+        currJob->execute();
+      }
     }
     // pop the level from the queue.
     priorityQueue.pop_back();
@@ -173,8 +182,9 @@ void JLFP::displayQueueJobs() {
   }
 }
 
-JLFP::JLFP(int TPC_denom) {
+JLFP::JLFP(int TPC_denom, float TPC_subset) {
   this->TPC_denom = TPC_denom;
+  this->TPC_subset = TPC_subset;
   // init the thread.
   this->running = true;
   this->cleanUpThread = std::thread([this] { this->cleanUpLoop(); });
