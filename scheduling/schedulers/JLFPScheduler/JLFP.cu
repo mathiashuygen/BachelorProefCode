@@ -84,14 +84,8 @@ void JLFP::dispatch() {
 void JLFP::onJobCompletion(Job *job, float jobCompletionTime) {
   // check if the job met its deadline.
   job->releaseMasks();
-  std::cout << "job completion time = " << jobCompletionTime << std::endl;
-  std::cout << "job absolute deadline = " << job->getAbsoluteDeadline()
-            << std::endl;
   if (jobCompletionTime > job->getAbsoluteDeadline()) {
-    std::cout << "deadline miss" << std::endl;
     this->incDeadlineMisses();
-  } else {
-    std::cout << "job finished before its absolute deadline" << std::endl;
   }
   this->incJobsCompleted();
   // makes sure the job is cleaned up by thet task.
