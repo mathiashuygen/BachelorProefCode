@@ -14,6 +14,8 @@
 
 // Include job headers
 #include "jobs/busyJob/busyJob.h"
+#include "jobs/matrixMultiplicationJob/matrixMultiplicationJob.h"
+#include "jobs/vectorAddJob/vectorAddJob.h"
 #include "jobs/jobFactory/jobFactory.h"
 #include "jobs/printJob/printJob.h"
 
@@ -76,60 +78,6 @@ std::vector<Task> get_task_system(
 
     return tasks;
 }
-
-std::vector<Task> parseTaskSetFromStdin() {
-    std::vector<Task> tasks;
-    std::vector<std::string> tokens;
-    std::string token;
-
-    // Read all input tokens
-    while (std::cin >> token) {
-        tokens.push_back(token);
-    }
-
-    if (tokens.empty()) {
-        std::cerr << "No input provided.\n";
-        return tasks;
-    }
-
-    // First token is number of tasks
-    int taskCount = std::stoi(tokens[0]);
-    size_t expectedTokens = 1 + taskCount * 7;
-
-    if (tokens.size() < expectedTokens) {
-        std::cerr << "Not enough tokens. Expected at least " << expectedTokens
-                  << " but got " << tokens.size() << std::endl;
-        return tasks;
-    }
-
-    size_t idx = 1;
-    for (int i = 0; i < taskCount; ++i) {
-        std::string type = tokens[idx++];
-        int offset = std::stoi(tokens[idx++]);
-        int wcet = std::stoi(tokens[idx++]);
-        int deadline = std::stoi(tokens[idx++]);
-        int period = std::stoi(tokens[idx++]);
-        int threadsPerBlock = std::stoi(tokens[idx++]);
-        int blockCount = std::stoi(tokens[idx++]);
-
-        std::unique_ptr<JobFactoryBase> factory;
-
-        if (type == "busy") {
-            factory = JobFactory<BusyJob, int, int>::create(threadsPerBlock, blockCount);
-        } else if (type == "print") {
-            factory = JobFactory<PrintJob, int, int>::create(threadsPerBlock, blockCount);
-        } else {
-            std::cerr << "Unknown job type: " << type << " (task " << i << ")" << std::endl;
-            continue;
-        }
-
-        tasks.emplace_back(offset, wcet, deadline, period, std::move(factory), i);
-    }
-
-    return tasks;
-}
-
-
 
 int main() {
   const std::string schedulerType = SCHEDULER_TYPE;
