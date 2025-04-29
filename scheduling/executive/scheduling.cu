@@ -8,7 +8,7 @@
 std::unique_ptr<BaseScheduler>
 createScheduler(const std::string &type, int tpcSplitDenom, float tpcSubset) {
   if (type == "JLFP") {
-    return std::make_unique<JLFP>(tpcSplitDenom, TPCSubset);
+    return std::make_unique<JLFP>(tpcSplitDenom, tpcSubset);
   } else if (type == "FCFS") {
     return std::make_unique<FCFSScheduler>();
   } else if (type == "dumbScheduler") {
