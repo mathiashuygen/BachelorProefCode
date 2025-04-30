@@ -6,6 +6,7 @@ set(SCHEDULER_TYPE "JLFP" CACHE STRING "Scheduler type")
 set(THREADS_PER_BLOCK 256 CACHE STRING "Threads per block")
 set(BLOCK_COUNT 80 CACHE STRING "Number of blocks")
 set(TPC_SPLIT_DENOM 2 CACHE STRING "Number of TPCs requested")
+set(TPC_SUBSET 1 cashe STRING "Subset of TPCs requested")
 
 # Set this to the path where libsmctrl.a and libsmctrl.h are located
 set(LIBSMCTRL_DIR "/home/user/workspace/libraries/libsmctrl" CACHE PATH "Path to libsmctrl")
@@ -25,6 +26,10 @@ add_compile_definitions(
     THREADS_PER_BLOCK=${THREADS_PER_BLOCK}
     BLOCK_COUNT=${BLOCK_COUNT}
     TPC_SPLIT_DENOM=${TPC_SPLIT_DENOM}
+    TPC_SUBSET=${TPC_SUBSET}
+}
+
+
 )
 
 # Gather all source files
