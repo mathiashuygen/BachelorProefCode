@@ -13,15 +13,11 @@ void BaseScheduler::setJobTPCMask(int amountOfTPCs, Job *job) {
     MaskElement element = masks.back();
     masks.pop_back();
     int elementIndex = element.getIndex();
-    // ... rest of the loop ...
     if (element.isFree()) {
       job->addMask(element);
       DeviceInfo::getDeviceProps()->disableTPC(elementIndex);
       amountOfFreeTPCsFound += 1;
     }
-    // Consider adding a check here too: if (!element.isFree()), what happens?
-    // Does the loop potentially run forever if there aren't enough *free*
-    // masks?
   }
 }
 

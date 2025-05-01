@@ -7,7 +7,7 @@
 #include "../kernels/vectorAdd.h"
 #include <cstddef>
 #include <cuda_runtime.h>
-
+#include <random>
 class VectorAddJob : public Job {
 
 private:
@@ -20,7 +20,6 @@ private:
                                          float *d_A, float *d_B, float *d_C,
                                          float *A, float *B, float *C);
 
-  int vectorSize = 0;
   float *d_A;
   float *d_B;
   float *d_C;
@@ -29,14 +28,16 @@ private:
   float *B = nullptr;
   float *C = nullptr;
   cudaStream_t kernelStream;
-  size_t nrOfElements;
+
+  int vectorSize;
+  size_t nrOfBytes;
 
 public:
   // job definition that goes with a task.
   void execute() override;
 
   VectorAddJob(int threadsPerBlock, int vectorSize);
-  ~VectorAddJob() override;
+  ~VectorAddJob();
 
   std::string getMessage() override;
 };

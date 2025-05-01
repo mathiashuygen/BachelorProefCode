@@ -81,6 +81,7 @@ void JLFP::dispatch() {
       // what if there aren't enough TPCs available that the job requests but
       // you still launch the job on less TPCs => mouldable job.
       else if (TPCsInUse < N && TPCsInUse > 0) {
+        currJobQueue.pop();
         int neededTPCs = ceil(TPCsInUse * this->TPC_subset);
 
         currJob->setJobObserver(this);

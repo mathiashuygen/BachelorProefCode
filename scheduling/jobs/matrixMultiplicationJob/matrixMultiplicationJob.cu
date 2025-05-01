@@ -27,7 +27,6 @@ void MatrixMultiplicationJob::addMatrixMulKernelCallback(Job *job,
 }
 
 void MatrixMultiplicationJob::execute() {
-  // get a random absolute deadline.
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<float> realDist(1.0, 100.0);
@@ -49,8 +48,10 @@ void MatrixMultiplicationJob::execute() {
 
   // copy the contents of the host arrays to the device arrays in an async way
   // before the kernel is launched.
-  cudaMemcpyAsync(d_A, A, nrOfElements, cudaMemcpyHostToDevice, kernelStream);
-  cudaMemcpyAsync(d_B, B, nrOfElements, cudaMemcpyHostToDevice, kernelStream);
+  cudaMemcpyAsync(d_A, A, this->nrOfElements, cudaMemcpyHostToDevice,
+                  kernelStream);
+  cudaMemcpyAsync(d_B, B, this->nrOfElements, cudaMemcpyHostToDevice,
+                  kernelStream);
 
   // kernel launch.
   matrixMul<<<this->blocks, this->threadsPerBlock, 0, kernelStream>>>(

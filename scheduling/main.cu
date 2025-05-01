@@ -28,7 +28,7 @@ int main() {
   std::unique_ptr<JobFactoryBase> busyJobFactory2 =
       JobFactory<BusyJob, int, int>::create(10, 10);
   std::unique_ptr<JobFactoryBase> vectorAddJobFactory =
-      JobFactory<VectorAddJob, int, int>::create(512, 100000);
+      JobFactory<VectorAddJob, int, int>::create(512, 100);
   std::unique_ptr<JobFactoryBase> vectorAddJobFactory2 =
       JobFactory<VectorAddJob, int, int>::create(512, 100000);
   std::unique_ptr<JobFactoryBase> matrixMulFactory =
@@ -45,7 +45,7 @@ int main() {
   // tasks.push_back(Task(10, 10, 20, 5, std::move(printJobFactory), 1));
 
   // tasks.push_back(Task(10, 10, 20, 5, std::move(busyJobFactory2), 1));
-  tasks.push_back(Task(100, 10000, 2, 1000, std::move(matrixMulFactory), 1));
+  tasks.push_back(Task(0, 1, 1, 10, std::move(vectorAddJobFactory), 1));
 
   JLFP scheduler1(1, 1);
   DumbScheduler scheduler2;

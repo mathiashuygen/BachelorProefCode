@@ -15,6 +15,12 @@ bool Task::isJobReady() const {
   float currentTime = getCurrentTime();
   // if the task's execution time has elapsed it should not launch any more
   // jobs.
+  /* std::cout << "curr time: " << currentTime << std::endl;
+   std::cout << "period: " << this->period << std::endl;
+   std::cout << "previous job release time: " << previousJobRelease <<
+   std::endl; std::cout << "current time - previousJobRelease = "
+             << currentTime - previousJobRelease << std::endl;
+   */
   if (!firstJobReleased) {
     return currentTime - beginTime >= offset;
   } else {

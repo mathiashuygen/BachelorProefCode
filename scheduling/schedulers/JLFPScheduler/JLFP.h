@@ -22,6 +22,7 @@ private:
   // clean up fields and methods.
   // the actual thread.
   std::thread cleanUpThread;
+  std::thread schedulingThread;
   // boolean that is checked to keep the loop inside the thread running.
   std::atomic<bool> running{false};
   // loop method that loops inside the thread to clean up all the jobs.

@@ -31,6 +31,9 @@ void VectorAddJob::addVectorAddKernelCallback(Job *job, cudaStream_t stream,
 }
 
 void VectorAddJob::execute() {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> realDist(1.0, 100.0);
 
   // set the stream's mask using libsmctrl.
   if (!this->TPCMasks.empty()) {
@@ -40,21 +43,24 @@ void VectorAddJob::execute() {
 
   // fill up two arrays with values.
   for (int i = 0; i < this->vectorSize; i++) {
-    A[i] = i;
-    B[i] = i + i;
+    A[i] = realDist(gen);
+    B[i] = realDist(gen);
   }
 
   // copy the contents of the host arrays to the device arrays in an async way
   // before the kernel is launched.
-  cudaMemcpyAsync(d_A, A, nrOfElements, cudaMemcpyHostToDevice, kernelStream);
-  cudaMemcpyAsync(d_B, B, nrOfElements, cudaMemcpyHostToDevice, kernelStream);
+  cudaMemcpyAsync(d_A, A, this->vectorSize, cudaMemcpyHostToDevice,
+                  kernelStream);
+  cudaMemcpyAsync(d_B, B, this->vectorSize, cudaMemcpyHostToDevice,
+                  kernelStream);
 
   // kernel launch.
   vectorAddKernel<<<this->threadBlocks, this->threadsPerBlock, 0,
                     kernelStream>>>(d_A, d_B, d_C, this->vectorSize);
 
   //  copy the result back into the host array.
-  cudaMemcpyAsync(C, d_C, nrOfElements, cudaMemcpyDeviceToHost, kernelStream);
+  cudaMemcpyAsync(C, d_C, this->vectorSize, cudaMemcpyDeviceToHost,
+                  kernelStream);
   addVectorAddKernelCallback(this, kernelStream, d_A, d_B, d_C, A, B, C);
 }
 
@@ -62,18 +68,18 @@ VectorAddJob::VectorAddJob(int threadsPerBlock, int vectorSize) {
 
   this->threadsPerBlock = threadsPerBlock;
   this->vectorSize = vectorSize;
+  this->nrOfBytes = this->vectorSize * sizeof(float);
 
   // kernel launch config.
-  cudaMalloc(&d_A, this->vectorSize * sizeof(float));
-  cudaMalloc(&d_B, this->vectorSize * sizeof(float));
-  cudaMalloc(&d_C, this->vectorSize * sizeof(float));
+  cudaMalloc(&d_A, this->nrOfBytes);
+  cudaMalloc(&d_B, this->nrOfBytes);
+  cudaMalloc(&d_C, this->nrOfBytes);
 
   cudaStreamCreate(&kernelStream);
 
-  nrOfElements = this->vectorSize * sizeof(float);
-  cudaHostAlloc((void **)&A, nrOfElements, cudaHostAllocDefault);
-  cudaHostAlloc((void **)&B, nrOfElements, cudaHostAllocDefault);
-  cudaHostAlloc((void **)&C, nrOfElements, cudaHostAllocDefault);
+  cudaHostAlloc((void **)&A, this->nrOfBytes, cudaHostAllocDefault);
+  cudaHostAlloc((void **)&B, this->nrOfBytes, cudaHostAllocDefault);
+  cudaHostAlloc((void **)&C, this->nrOfBytes, cudaHostAllocDefault);
 
   // in this case the total amount of threads is the same as the size of the
   // vector because each thread will calculate one addition.
@@ -88,8 +94,8 @@ VectorAddJob::VectorAddJob(int threadsPerBlock, int vectorSize) {
     this->neededTPCs = 1;
     return;
   }
-  this->neededTPCs =
-      ceil(neededSMs / DeviceInfo::getDeviceProps()->getSMsPerTPC());
+  this->neededTPCs = ceil((float)neededSMs /
+                          (float)DeviceInfo::getDeviceProps()->getSMsPerTPC());
 }
 
 std::string VectorAddJob::getMessage() { return "vector addition done\n"; }
